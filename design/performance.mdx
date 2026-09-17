@@ -1,0 +1,247 @@
+---
+title: "Performance: Core Web Vitals Targets and Optimization"
+sidebarTitle: "Performance"
+description: "Core Web Vitals optimizations applied on every build — image priority, font loading, GPU-safe motion, JS bundle shaping, build checks, and meta tag setup."
+---
+
+Performance isn't something that gets added after the page works — it's built into every decision Claude makes during the build phase. Images are configured for LCP from the start, fonts are loaded to eliminate layout shift, animations target only GPU-composited properties, and the bundle is shaped to avoid unnecessary client-side JavaScript. This page documents each category of optimization and how it's applied.
+
+The targets Claude builds toward on every page are:
+
+| Metric | Target | What it measures |
+|--------|--------|-----------------|
+| **LCP** (Largest Contentful Paint) | < 2.5s | How fast the main content loads |
+| **INP** (Interaction to Next Paint) | < 200ms | How fast the page responds to user input |
+| **CLS** (Cumulative Layout Shift) | < 0.1 | How much the page shifts while loading |
+
+---
+
+## Images
+
+The hero image is almost always the LCP element — the largest visible piece of content in the initial viewport. It gets the `priority` prop, which tells Next.js to preload it with a `<link rel="preload">` tag in the document head:
+
+```tsx
+import Image from "next/image";
+
+{/* Hero image — above the fold, preloaded for LCP */}
+<Image
+  src="/images/hero.jpg"
+  alt="Description of what the image shows"
+  width={1200}
+  height={630}
+  priority                            // Preloads this image; use on hero only
+  className="object-cover w-full"
+/>
+
+{/* Below-the-fold image — lazy loaded by default */}
+<Image
+  src="/images/feature.jpg"
+  alt="Description"
+  width={600}
+  height={400}
+  sizes="(max-width: 768px) 100vw, 50vw"   // Tells the browser which size to fetch
+/>
+```
+
+**What Next.js handles automatically:**
+- Converts images to WebP or AVIF when the browser supports it (typically 30–50% smaller)
+- Lazy loads all images without `priority`, deferring off-screen loading
+- Generates `srcset` entries so mobile devices download smaller files
+
+**What must be set manually:**
+- Always provide `width` and `height` — without them, the browser can't reserve space before the image loads, which causes CLS
+- Use the `sizes` prop for any image that changes width across breakpoints
+- Place images in `site/public/images/`
+
+---
+
+## Fonts
+
+Fonts loaded incorrectly cause two problems: a render-blocking request that delays the first paint, and a font swap that shifts text and raises the CLS score. `next/font/google` eliminates both.
+
+```tsx
+import { Space_Grotesk, DM_Sans } from "next/font/google";
+
+const heading = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-display",       // Emitted as a CSS variable on <body>
+  display: "swap",                  // Shows fallback font immediately; swaps when loaded
+  weight: ["400", "600", "700"],    // Only the weights actually used
+});
+
+const body = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-text",
+  display: "swap",
+});
+```
+
+`display: "swap"` prevents FOIT (Flash of Invisible Text) by showing the system fallback font while the custom font loads, then swapping. `next/font` also self-hosts the font files at build time, eliminating the external network request to Google's CDN.
+
+**Rules:**
+- Never use CDN `<link>` tags or `@import url()` in CSS for fonts — these block rendering
+- Only load the weights you use (not all 9 weights of a variable font)
+- Prefer variable fonts when available — one file covers all weights
+- The CSS variable names passed to `next/font` (`--font-display`, `--font-text`) must differ from the Tailwind theme keys (`--font-heading`, `--font-body`) — identical names create a self-referencing mapping that resolves to nothing
+
+---
+
+## Motion
+
+Animation performance is determined by which CSS properties change. Properties like `width`, `height`, `margin`, `padding`, `top`, and `left` trigger full layout recalculation on every frame — at 60fps, that's 60 layout passes per second. `transform` and `opacity` are composited on the GPU and don't trigger layout at all.
+
+```tsx
+// ✅ GPU-composited — no layout recalculation
+<motion.div
+  initial={{ opacity: 0, transform: "translateY(20px)" }}
+  animate={{ opacity: 1, transform: "translateY(0px)" }}
+  transition={{ duration: 0.5 }}
+/>
+
+// ❌ Triggers layout on every frame
+<motion.div
+  animate={{ height: "auto", marginTop: 20 }}
+/>
+```
+
+**For height animations** (accordion expand, collapsible sections), use `grid-template-rows: 0fr → 1fr` instead of animating `height`. This achieves the same visual effect without triggering layout:
+
+```css
+.collapsible {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 300ms ease-out;
+}
+
+.collapsible.open {
+  grid-template-rows: 1fr;
+}
+
+.collapsible > div {
+  overflow: hidden;
+}
+```
+
+To reduce the Motion library bundle size by ~40%, use `LazyMotion` with the `domAnimation` feature set instead of importing everything:
+
+```tsx
+import { LazyMotion, domAnimation, m } from "motion/react";
+
+<LazyMotion features={domAnimation}>
+  <m.div animate={{ opacity: 1 }} />
+</LazyMotion>
+```
+
+---
+
+## JavaScript
+
+Claude follows the 62 rules in the `vercel-react-best-practices` skill to minimize JavaScript sent to the client. The key categories:
+
+<Tip>
+  The `vercel-react-best-practices` skill is bundled with Claude Web Builder. See the [Bundled Skills](/skills/overview) page to learn what it enforces and how it's applied during the build phase.
+</Tip>
+
+<AccordionGroup>
+  <Accordion title="Async & Data Fetching">
+    - Fetch data in Server Components — the data request runs on the server with zero client JavaScript
+    - Use `React.startTransition()` for non-urgent state updates to keep the main thread unblocked
+    - Avoid `useEffect` for data fetching; use Server Components or a library like SWR for client-side needs
+    - Keep event handlers fast — no heavy computation on click or input events
+  </Accordion>
+
+  <Accordion title="Bundle Size">
+    - Import components directly, not through barrel files (`index.ts` re-exports cause entire modules to be included even if only one export is used)
+    - Use `dynamic()` from `next/dynamic` for below-the-fold sections — they load only when needed
+    - Load analytics and tracking scripts after hydration using `next/script` with `strategy="afterInteractive"`
+    - Use `LazyMotion` with `domAnimation` instead of the full Motion bundle
+
+    ```tsx
+    import dynamic from "next/dynamic";
+
+    const Testimonials = dynamic(() => import("@/components/testimonials"), {
+      loading: () => <div className="h-96 animate-pulse bg-muted rounded-lg" />,
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Rendering Strategy">
+    - Keep `page.tsx` as a Server Component — it renders to HTML with no client JavaScript
+    - Only add `"use client"` to components that genuinely need it: `useState`, `useEffect`, event handlers, and Motion animations
+    - Push `"use client"` as far down the component tree as possible so the maximum amount of the page renders as static HTML
+    - Use `content-visibility: auto` on long sections to skip rendering off-screen content during initial load
+  </Accordion>
+
+  <Accordion title="Preventing Rerenders">
+    - Avoid creating new object or function literals inside JSX — they create a new reference on every render and cause child components to rerender unnecessarily
+    - Colocate state with the component that uses it — global state causes the entire tree to rerender on every update
+    - Use `React.memo` on expensive components that receive stable props
+    - Tailwind CSS purges unused styles automatically in production — avoid `@apply` in global CSS, which can defeat the purge
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Build Verification
+
+The build must pass before deployment. Claude runs this check at the end of Phase 4 and again during Phase 5:
+
+```bash
+cd site && npm run build
+```
+
+The build output is checked for:
+
+| Check | Requirement |
+|-------|-------------|
+| Page JavaScript size | Each page under 100KB of JS |
+| TypeScript errors | Zero — the build fails on type errors |
+| Image warnings | `width` and `height` set on all `<Image>` components |
+| Font warnings | `display: "swap"` set, no CDN links |
+| Static generation | Landing pages generate as static HTML (no dynamic server rendering) |
+
+<Warning>
+  A page that fails `npm run build` is never deployed. Claude fixes all build errors before proceeding to the deploy phase.
+</Warning>
+
+---
+
+## Meta Tags
+
+Every page exports metadata via Next.js's `metadata` export in `layout.tsx` or `page.tsx`. This covers the basics required for search indexing and social sharing:
+
+```tsx
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Your Business Name — What You Do",
+  description: "A specific, benefit-focused description under 160 characters. Written for humans, not keyword-stuffed.",
+  openGraph: {
+    title: "Your Business Name — What You Do",
+    description: "Same description, or a slightly longer social-optimized version.",
+    url: "https://yourdomain.com",
+    siteName: "Your Business Name",
+    images: [
+      {
+        url: "/images/og-image.jpg",   // 1200×630px recommended
+        width: 1200,
+        height: 630,
+        alt: "Description of the OG image for screen readers",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Your Business Name — What You Do",
+    description: "Description for Twitter cards.",
+    images: ["/images/og-image.jpg"],
+  },
+};
+```
+
+Meta tag rules:
+- `title` under 60 characters (search results truncate longer titles)
+- `description` under 160 characters
+- OG image at 1200×630px for consistent social card display
+- No keyword stuffing — descriptions are written for humans, reviewed by the copy humanizer

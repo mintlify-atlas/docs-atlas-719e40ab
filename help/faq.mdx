@@ -1,0 +1,156 @@
+---
+title: "Frequently Asked Questions About Claude Web Builder"
+sidebarTitle: "FAQ"
+description: "Answers to the most common questions about building and deploying landing pages with Claude Web Builder — no coding experience required."
+---
+
+Claude Web Builder is designed to be accessible to anyone, whether you've never written a line of code or you're a seasoned developer looking for a faster workflow. Below you'll find answers to the most common questions about how the tool works, what it costs, and what you can do with the pages it creates.
+
+<Accordion title="Do I need to know how to code?">
+  **No.** Claude handles all the coding. You describe your business, answer a short set of questions about your goals and style preferences, and give feedback on the design — Claude writes every line of HTML, CSS, and TypeScript for you.
+
+  The only things you need to do are:
+
+  - Answer the discovery questions (takes about 5 minutes)
+  - Review the design and say what you like or want changed
+  - Decide whether to deploy when the page is ready
+
+  Everything else — scaffolding the project, installing dependencies, writing components, running SEO checks, and deploying — is handled automatically.
+</Accordion>
+
+<Accordion title="Is this free?">
+  **Mostly.** Here's the full breakdown:
+
+  | Tool | Cost |
+  |------|------|
+  | Claude Code subscription | Paid — from [Anthropic](https://claude.ai/product/claude-code) |
+  | Node.js | Free |
+  | Git | Free |
+  | Deployment (bundled method) | Free — no Vercel account needed |
+  | Custom domain (optional) | Free Vercel account + your domain registrar's fees |
+
+  The bundled deploy script uses Vercel's sandbox endpoint directly — you don't need to create a Vercel account, install the Vercel CLI, or log in to deploy. If you later want to claim the deployment permanently or add a custom domain, you'll need a free Vercel account.
+</Accordion>
+
+<Accordion title="Can I edit the page after Claude builds it?">
+  **Yes.** The full source code lives in the `site/` folder on your computer. It's a standard **Next.js + React** project — the same stack used by professional developers worldwide.
+
+  You or any developer can open those files and edit anything: copy, colors, layout, components, images. The main page is at `site/src/app/page.tsx` and the global styles are in `site/src/app/globals.css`.
+
+  If you want Claude to make changes after the initial build, just ask — it can update and redeploy at any time.
+</Accordion>
+
+<Accordion title="What if I don't like the design?">
+  **Tell Claude specifically what you don't like.** Vague feedback like "I don't like it" is harder for Claude to act on. Specific feedback works much better:
+
+  - *"The colors feel too cold — I want something warmer"*
+  - *"Make the headline bigger and bolder"*
+  - *"The features section feels too generic, can we try something different?"*
+  - *"I want the overall vibe to feel more premium and minimal"*
+
+  Claude iterates on feedback in real time — you'll see the change immediately. If you want a complete overhaul, say **"let's go back to the design phase"** and Claude will re-present full design options from scratch.
+</Accordion>
+
+<Accordion title="Can I use my own domain (like mybusiness.com)?">
+  **Yes.** After deploying, you'll get a preview URL (`https://your-site-abc123.vercel.app`) and a claim URL. Here's how to connect a custom domain:
+
+  <Steps>
+    <Step title="Claim your deployment">
+      Open the claim URL Claude gives you and sign in (or sign up) for a free Vercel account. This transfers the deployment to your account.
+    </Step>
+    <Step title="Add your domain">
+      Go to your **Vercel dashboard → your project → Settings → Domains** and click **Add Domain**. Enter your domain (e.g. `mybusiness.com`).
+    </Step>
+    <Step title="Update DNS">
+      Vercel will show you the DNS records to add. Log in to your domain registrar (GoDaddy, Namecheap, Cloudflare, etc.) and add those records. Changes typically take a few minutes to a few hours to propagate.
+    </Step>
+  </Steps>
+
+  <Note>
+    You need a free Vercel account to use a custom domain. The account is free — you only pay if you exceed Vercel's generous hobby tier limits.
+  </Note>
+</Accordion>
+
+<Accordion title="Can I build more than one page?">
+  **Yes.** Each time you run the project, Claude builds a fresh page inside a folder called `site/`. To start a new project:
+
+  1. Rename or move the existing `site/` folder (e.g. rename it to `site-bakery/`)
+  2. Run `claude` from the project folder again
+  3. Claude will create a new `site/` for the next project
+
+  Each project is completely independent — different designs, different content, different deployments.
+</Accordion>
+
+<Accordion title="Does the page work on phones?">
+  **Yes.** Every page Claude builds is **mobile-first** by default. The layout is tested and verified at four standard breakpoints:
+
+  | Breakpoint | Device |
+  |------------|--------|
+  | 375px | Smartphone (portrait) |
+  | 768px | Tablet |
+  | 1024px | Laptop |
+  | 1440px | Desktop / wide screen |
+
+  Touch targets are sized to at least 44×44px on mobile, and navigation automatically collapses to a hamburger menu on smaller screens.
+</Accordion>
+
+<Accordion title="What languages can the page be in?">
+  **Any language** for the page content. You can ask Claude to write your page copy in French, German, Portuguese, Japanese — any language.
+
+  The **build interface** (the conversation with Claude) supports **English and Spanish natively**. If you respond to Claude in Spanish, it switches the entire conversation — questions, instructions, and status updates — to Spanish automatically.
+
+  <Tip>
+    For Spanish, you can also start by saying "Prefiero español" and Claude will switch immediately.
+  </Tip>
+</Accordion>
+
+<Accordion title="What is the footer credit?">
+  Every page Claude builds includes a subtle footer line:
+
+  > *Built with Claude Web Builder by [Tododeia](https://tododeia.com)*
+
+  It's styled as small, low-contrast text (`text-sm text-muted-foreground`) so it doesn't compete with your content. **You can remove or modify it at any time** — it's in `site/src/app/page.tsx` at the bottom of the `<footer>` element. There are no restrictions on editing or removing it.
+</Accordion>
+
+<Accordion title="Can I add a contact form?">
+  **Yes.** Claude offers two options:
+
+  **Default — mailto link:** Claude creates a styled contact section with a button that opens the visitor's email client pre-addressed to you. No backend, no setup — works instantly.
+
+  **Upgrade — Formspree:** For a real form where submissions are collected and emailed to you (no backend required):
+
+  1. Create a free account at [formspree.io](https://formspree.io)
+  2. Create a new form and copy your **Form ID** (looks like `xabc1234`)
+  3. Tell Claude: *"Use Formspree with my form ID: xabc1234"*
+
+  Claude will wire up the form using Formspree's endpoint — visitors submit the form and responses land in your email inbox.
+
+  <Note>
+    Formspree's free tier allows up to 50 submissions per month. For higher volume, check their pricing at [formspree.io/plans](https://formspree.io/plans).
+  </Note>
+</Accordion>
+
+<Accordion title="What is the claim URL after deployment?">
+  When Claude deploys your page using the bundled script, you get two URLs:
+
+  | URL | What it does |
+  |-----|-------------|
+  | **Preview URL** | Your live page — works immediately, shareable with anyone |
+  | **Claim URL** | Lets you transfer the deployment to your own free Vercel account |
+
+  The **preview URL** is live the moment the deploy finishes. You can share it with clients, put it in your bio, or use it as-is indefinitely.
+
+  The **claim URL** is optional. Claiming gives you permanent ownership of the deployment, access to the Vercel dashboard (analytics, logs, environment variables), and the ability to add a custom domain.
+</Accordion>
+
+<Accordion title="What happens if Claude gets stuck or confused?">
+  This can occasionally happen in long sessions. Try these in order:
+
+  1. **Redirect Claude:** Say *"let's start the questionnaire from the beginning"* — this resets the conversation context without losing your files.
+  2. **Restart the session:** Close Claude (press `Ctrl+C` or `Cmd+C` in the terminal) and run `claude` again from the project folder. Claude will re-read the project instructions and start fresh.
+  3. **Check the files:** If Claude built partial files before getting confused, the `site/` folder may have incomplete code. You can ask Claude to review and fix a specific file, or delete `site/` and start the build phase again.
+
+  <Tip>
+    If Claude starts asking questions it already asked, it may have lost context. Say "We already covered this — here's what we decided: [summary]" to get back on track quickly.
+  </Tip>
+</Accordion>

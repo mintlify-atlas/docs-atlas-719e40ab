@@ -1,0 +1,158 @@
+---
+title: "Phase 1: Discovery — Understanding Your Business"
+sidebarTitle: "Discovery"
+description: "How Claude gathers everything it needs through 4 conversational question rounds before writing a single line of code."
+---
+
+Phase 1 is where Claude gets to know your business. Before any design decisions are made or any code is written, Claude walks you through four short rounds of questions — covering your brand basics, visual preferences, page content, and a few technical details. The whole conversation typically takes 5–10 minutes, and you never have to answer more than three questions at once.
+
+## What Phase 1 Does
+
+Claude needs to understand your business before it can build anything worth showing. Phase 1 collects everything required to make confident design and content decisions: who you are, who you serve, what you want the page to accomplish, and what assets you already have.
+
+Once Phase 1 is complete, Claude has enough to generate a full design direction, write real copy, and build a complete landing page — without asking you for approval on every little thing along the way.
+
+<Note>
+  You only need to answer questions and give feedback on the design. Everything else — choosing colors, writing copy, selecting fonts, building components — Claude handles automatically.
+</Note>
+
+---
+
+## The Four Rounds
+
+<Steps>
+  <Step title="Round 1: Business Basics">
+    Claude asks three foundational questions to understand what you do and who you serve.
+
+    - **Business name** — what's your project or company called?
+    - **What you do** — one sentence describing your service or product
+    - **Target audience** — who are you trying to reach?
+
+    After Round 1, Claude summarizes what it heard: *"Got it — [business] helps [audience] with [service]. Let me ask about the look and feel."* If anything is off, just say so before continuing.
+
+    You don't need polished answers here. A rough description like "I make custom leather bags and sell them online" is plenty.
+  </Step>
+
+  <Step title="Round 2: Visual Direction">
+    Claude asks about the look and feel you want — colors, style, and overall vibe.
+
+    - **Reference sites** — any websites whose design you like? (Claude will analyze them directly)
+    - **Color preferences** — specific colors you love, or "you decide"
+    - **Light or dark theme** — defaults to light if you skip this
+    - **Vibe** — professional, bold, elegant, playful, minimal, warm, modern, edgy, or luxurious
+
+    Claude uses these answers alongside its built-in design intelligence (161 color palettes, 57 font pairings) to put together a specific design direction for your approval.
+
+    <Tip>
+      If you say "you decide," Claude picks colors and fonts based on your industry — a law firm gets a refined slate-and-gold palette, a food brand gets terracotta and warm cream. It always tells you what it chose and why.
+    </Tip>
+  </Step>
+
+  <Step title="Round 3: Content">
+    Claude asks about the words and sections that will actually appear on the page.
+
+    - **Main action** — what's the one thing you want visitors to do? (book a call, sign up, buy, get a quote)
+    - **Key highlights** — 3–4 things you want to showcase (these become the features/services section)
+    - **Contact method** — a form, an email link, or a phone number
+    - **Tagline** — your slogan, or "write one for me"
+    - **Testimonials** — real quotes you have, or Claude creates placeholder text
+    - **Social links** — Instagram, LinkedIn, X, etc. — or leave as placeholders
+
+    Content decisions in Round 3 are informed by the design direction you already approved in Round 2, so everything stays visually and tonally consistent.
+  </Step>
+
+  <Step title="Round 4: Technical Details">
+    A short round covering assets and deployment preferences.
+
+    - **Logo** — a file, a URL, or "use text" (Claude generates a styled text logo)
+    - **Images** — photos or graphics to include, or "no images" (Claude uses patterns and gradients)
+    - **Favicon** — the small icon in browser tabs, or Claude generates one from your brand colors
+    - **Page language** — defaults to whatever language you've been speaking
+    - **Deploy?** — whether you want a live URL at the end (defaults to yes)
+
+    After Round 4, Claude confirms the full brief before building anything.
+  </Step>
+</Steps>
+
+---
+
+## Two Important Pauses
+
+Phase 1 has two moments where Claude stops and checks in with you before moving forward.
+
+### The Design Approval Pause (After Round 2)
+
+After Round 2, Claude presents the design direction it's planning to use:
+
+- Exact hex color codes for primary, accent, and neutral tones
+- Google Font names for headline and body text
+- The general layout approach and page personality
+
+Claude waits for your approval before asking any content questions. This matters because the design direction shapes the content: a minimal luxury brand needs different copy than a bold SaaS product. If you don't like the direction, say so specifically — *"the colors feel too corporate"* or *"I want something warmer"* — and Claude adjusts until it feels right.
+
+### The Brief Confirmation (After Round 4)
+
+Once all four rounds are complete, Claude summarizes everything it understood:
+
+- Business name and description
+- Target audience
+- Design direction (colors, fonts, vibe)
+- Main CTA and contact method
+- Key sections and features
+- Social media links
+- Assets included or defaults being used
+- Page language
+- Whether to deploy
+
+Then Claude asks: *"Does this capture everything? I'll start building once you give me the green light."*
+
+<Warning>
+  This is the last time Claude asks for your input before Phase 3. Once you confirm, it builds the full page automatically — no per-section approvals, no "should I add this?" questions.
+</Warning>
+
+---
+
+## Tips for Good Answers
+
+**Be specific where you can.** "I do marketing for dentists" is more useful than "I do marketing." The more specific your answers, the more accurately Claude can write your copy without needing to fill in guesses.
+
+**Use "you decide" freely.** It works on any question — colors, fonts, taglines, layout, testimonial text. Claude makes a smart default based on your industry and tells you what it chose. You can always change it later.
+
+**Share reference URLs.** If you paste a URL of a website you like, Claude analyzes its design — colors, typography, layout — and incorporates elements of that style into your direction.
+
+**Short answers are fine.** You don't need complete sentences. "Modern, minimal, dark theme" or "warm and approachable" gives Claude plenty to work with.
+
+**Keep feedback specific.** During the design approval pause, vague feedback like "I don't like it" is harder to act on than "the colors feel too cold" or "I want it to feel more premium."
+
+---
+
+## Spanish Language Support
+
+If your first message to Claude is in Spanish, the entire experience switches to Spanish automatically — questions, summaries, design direction, and all page content. Claude reads a Spanish version of every prompt and conducts the full flow in Spanish.
+
+If Claude isn't sure which language you prefer, it asks: *"Would you prefer English or Spanish? / ¿Prefieres inglés o español?"*
+
+<Note>
+  Technical reference files (design guides, skill documentation) stay in English because they're internal tools Claude reads, not content shown to you.
+</Note>
+
+---
+
+## What Claude Does Automatically vs. What Requires Your Input
+
+<CardGroup cols={2}>
+  <Card title="You Provide" icon="user">
+    - Answers to the questionnaire questions
+    - Approval or feedback on the design direction (after Round 2)
+    - Confirmation of the brief (after Round 4)
+    - Any real assets: logo, images, favicon
+    - Testimonials if you have them
+  </Card>
+  <Card title="Claude Handles" icon="wand-magic-sparkles">
+    - Choosing colors and fonts based on your industry
+    - Writing your tagline if you don't have one
+    - Creating placeholder testimonials
+    - Selecting the right page archetype for your business
+    - All copy, code, design, and deployment
+  </Card>
+</CardGroup>

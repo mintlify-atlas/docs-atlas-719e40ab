@@ -1,0 +1,304 @@
+---
+title: "Troubleshooting Claude Web Builder Setup and Build Issues"
+sidebarTitle: "Troubleshooting"
+description: "Fix common setup, build, deployment, and design problems in Claude Web Builder — with specific commands and step-by-step solutions."
+---
+
+Most problems with Claude Web Builder fall into one of four categories: something missing from your environment before you start, an error during the build phase, a hiccup during deployment, or a visual issue you want to correct. This page covers all of them with specific commands you can run to resolve each one.
+
+<Tabs>
+  <Tab title="Setup">
+    These issues occur before Claude builds anything — typically a missing tool or an incompatible version.
+
+    <Accordion title='"command not found: claude"'>
+      Claude Code isn't installed on your system. Install it with npm:
+
+      ```bash
+      npm install -g @anthropic-ai/claude-code
+      ```
+
+      If this command itself fails with `command not found: npm`, you need to install Node.js first (see the Node.js issue below).
+
+      After installing, you may need to log in:
+
+      ```bash
+      claude login
+      ```
+
+      Then try running `claude` again from the project folder.
+    </Accordion>
+
+    <Accordion title='"command not found: node"'>
+      Node.js isn't installed on your system. Download the **LTS version** from [nodejs.org](https://nodejs.org) and follow the installer for your operating system:
+
+      - **Mac / Windows:** Download the installer from [nodejs.org](https://nodejs.org) and run it
+      - **Ubuntu / Debian Linux:** `sudo apt install nodejs npm`
+
+      After installing, verify it worked:
+
+      ```bash
+      node --version
+      ```
+
+      You should see `v18.0.0` or higher.
+    </Accordion>
+
+    <Accordion title='"command not found: git"'>
+      Git isn't installed. It's usually pre-installed on Mac and Linux, but may be missing on Windows.
+
+      - **Mac:** Run `git --version` in Terminal — macOS will prompt you to install it automatically
+      - **Windows / Linux:** Download from [git-scm.com](https://git-scm.com) and run the installer
+
+      After installing, verify:
+
+      ```bash
+      git --version
+      ```
+    </Accordion>
+
+    <Accordion title="Node.js version is below 18">
+      Claude Web Builder requires **Node.js 18 or higher**. Check your current version:
+
+      ```bash
+      node --version
+      ```
+
+      If you see something like `v16.x.x` or `v14.x.x`, download the latest LTS version from [nodejs.org](https://nodejs.org) and reinstall. The LTS installer will replace your older version.
+
+      After reinstalling, confirm the version is 18 or above before running `claude`.
+    </Accordion>
+  </Tab>
+
+  <Tab title="Build">
+    These issues occur while Claude is scaffolding the project or building your page.
+
+    <Accordion title="Page doesn't load at localhost:3000">
+      A few things could be causing this:
+
+      **Check the dev server is running.** You should see output like `✓ Ready in Xms` in the terminal. If the terminal shows nothing or returned to a prompt, the server stopped. Restart it:
+
+      ```bash
+      cd site && npm run dev
+      ```
+
+      **Try a different port.** Something else on your computer may be using port 3000:
+
+      ```bash
+      cd site && npm run dev -- --port 3001
+      ```
+
+      Then open `http://localhost:3001` instead.
+
+      **Check for error output.** If the terminal shows a red error message, copy it and ask Claude: *"The dev server shows this error: [paste error]. How do I fix it?"*
+    </Accordion>
+
+    <Accordion title='"create-next-app" fails with "directory exists"'>
+      A previous `site/` folder already exists in the project directory. You need to remove it before scaffolding again.
+
+      <Warning>
+        The following command **permanently deletes** the `site/` folder and all its contents. Make sure you don't have work you want to keep inside it before running this.
+      </Warning>
+
+      ```bash
+      rm -rf site
+      ```
+
+      After removing it, ask Claude to retry the scaffold step, or restart the build from Phase 3.
+    </Accordion>
+
+    <Accordion title='"create-next-app" fails with a network error'>
+      This is usually a temporary internet connectivity issue. Check that you have an internet connection and retry once:
+
+      ```bash
+      npx create-next-app@latest site --typescript --tailwind --app --src-dir --no-import-alias --yes
+      ```
+
+      If the error persists, try on a different network or check whether your firewall or VPN is blocking npm registry requests.
+    </Accordion>
+
+    <Accordion title='"shadcn init" hangs with no output'>
+      The `shadcn init` command is waiting on an interactive prompt for a preset selection, and the `-y` flag alone doesn't skip it. The `-p` (preset) flag was omitted.
+
+      Stop the hanging process with `Ctrl+C`, then re-run with the correct flags:
+
+      ```bash
+      npx shadcn@latest init -b radix -p nova -y
+      ```
+
+      The `-p nova` flag selects the Nova preset and skips the interactive prompt entirely.
+
+      <Note>
+        Never run `npx shadcn-ui@latest` — that package is deprecated. The correct CLI package is `shadcn` (no `-ui`).
+      </Note>
+    </Accordion>
+
+    <Accordion title='"npm install" fails'>
+      A corrupted or partially installed `node_modules` folder can cause this. Clear it and reinstall:
+
+      <Warning>
+        This removes `node_modules` and `package-lock.json` inside `site/`. Your source files are not affected.
+      </Warning>
+
+      ```bash
+      rm -rf site/node_modules site/package-lock.json && npm install --prefix site
+      ```
+
+      If the error continues, check your internet connection and try again.
+    </Accordion>
+
+    <Accordion title='"npm run build" fails with TypeScript or compile errors'>
+      Build errors mean there's invalid TypeScript or a broken import somewhere in the generated code. Fix these locally before attempting to deploy:
+
+      ```bash
+      cd site && npm run build
+      ```
+
+      Read the error output carefully — it will tell you the exact file and line number. Ask Claude: *"The build failed with this error: [paste error]. Please fix it."*
+
+      Claude can read the file, identify the issue, and apply the fix without you needing to understand the code.
+    </Accordion>
+  </Tab>
+
+  <Tab title="Deployment">
+    These issues occur when deploying your finished page to Vercel.
+
+    <Accordion title="Vercel deployment fails">
+      Before deploying, always verify the build succeeds locally first:
+
+      ```bash
+      cd site && npm run build
+      ```
+
+      If the build passes locally but the Vercel deploy fails, check:
+
+      - **Internet connection:** The deploy script uploads your project to Vercel's servers
+      - **`site/` directory:** Make sure you're running the deploy from the project root, not from inside `site/`
+      - **Environment variables:** If your page uses `.env` variables, verify they're set correctly
+
+      Then retry the deploy:
+
+      ```bash
+      bash .claude/skills/vercel-deploy/scripts/deploy.sh site
+      ```
+    </Accordion>
+
+    <Accordion title="Sandbox deploy script fails">
+      If the bundled deploy script returns an error, check two things:
+
+      1. **The `site/` directory exists and has a `package.json`:**
+         ```bash
+         ls site/package.json
+         ```
+         If this fails, the scaffold step didn't complete. Ask Claude to re-run Phase 3.
+
+      2. **You're running from the project root** (the `claude-webkit` folder), not from inside `site/`:
+         ```bash
+         bash .claude/skills/vercel-deploy/scripts/deploy.sh site
+         ```
+
+      If the script still fails after verifying both, check your internet connection and try again.
+    </Accordion>
+
+    <Accordion title="Deploy times out">
+      The bundled deploy script waits up to **5 minutes** for Vercel to finish building. If it times out, the deployment may still be in progress on Vercel's servers.
+
+      Wait a few minutes, then manually check the preview URL Claude gave you — it may load successfully even if the script reported a timeout.
+
+      If the URL doesn't load after 10 minutes, the deployment likely failed. Run the deploy command again:
+
+      ```bash
+      bash .claude/skills/vercel-deploy/scripts/deploy.sh site
+      ```
+    </Accordion>
+
+    <Accordion title='"Error: No existing credentials found"'>
+      This error means you're using the Vercel CLI but haven't logged in. You have two options:
+
+      **Option 1 — Use the bundled deploy script (no account needed):**
+      ```bash
+      bash .claude/skills/vercel-deploy/scripts/deploy.sh site
+      ```
+      This is the recommended method and requires no account.
+
+      **Option 2 — Log in to the Vercel CLI:**
+      ```bash
+      npx vercel login
+      ```
+      A browser window opens for authentication. Log in with GitHub, GitLab, Bitbucket, or email. Once authenticated, re-run the deploy.
+    </Accordion>
+  </Tab>
+
+  <Tab title="Visual & Design">
+    These issues relate to how your page looks — in the browser, on mobile, or after Claude builds it.
+
+    <Accordion title="Screenshots not working (playwright-cli)">
+      If the `playwright-cli` screenshot command fails or isn't available, Claude falls back to manual preview automatically. You don't need to install anything extra.
+
+      **Manual fallback:** Open [http://localhost:3000](http://localhost:3000) in your browser while the dev server is running. You'll see your page exactly as it will appear live.
+
+      To give Claude visual feedback, describe what you see: *"The hero section background is white instead of the dark color we chose"* or *"The navigation links are overlapping on mobile."*
+    </Accordion>
+
+    <Accordion title="Design looks wrong on mobile">
+      Open your browser's **developer tools** and toggle the mobile device view:
+
+      - **Chrome / Edge:** Press `F12` → click the device icon (📱) in the toolbar
+      - **Firefox:** Press `F12` → click the responsive design mode icon
+      - **Safari:** Enable the Develop menu in preferences, then Develop → Enter Responsive Design Mode
+
+      Set the width to **375px** to simulate a standard smartphone. If the layout breaks, give Claude specific feedback:
+
+      - *"On mobile the hero text overflows off the right edge of the screen"*
+      - *"The navigation menu doesn't show a hamburger icon at 375px"*
+      - *"The feature cards are too wide and need to stack vertically"*
+    </Accordion>
+
+    <Accordion title="Fonts look like Arial instead of the chosen Google Font">
+      The Next.js scaffold defaults to `font-family: Arial, Helvetica, sans-serif` in `globals.css`. Claude should replace this during the build phase, but if it didn't:
+
+      1. Open `site/src/app/globals.css`
+      2. Find the line with `font-family: Arial` (it's inside the `body` rule)
+      3. Tell Claude: *"The body font is still Arial. Please replace it with [your chosen font] and make sure it's loaded via next/font/google."*
+
+      Claude will update `globals.css` and `layout.tsx` to load the correct Google Font with `display: "swap"`.
+    </Accordion>
+  </Tab>
+</Tabs>
+
+## Claude Behavior Issues
+
+Sometimes the issue isn't a technical error — it's Claude not following the expected workflow. Here's what to do in each case.
+
+<Accordion title="Claude seems confused or stuck in a loop">
+  Try these in order:
+
+  1. **Reset the conversation:** Say *"let's start the questionnaire from the beginning."* This reorients Claude without closing the session.
+  2. **Restart the session:** Press `Ctrl+C` in the terminal to close Claude, then run `claude` again from the project folder. Claude re-reads the project instructions on startup.
+
+  <Note>
+    Restarting does not delete any files Claude has already created. Your `site/` folder is safe.
+  </Note>
+</Accordion>
+
+<Accordion title="Claude starts coding before asking questions">
+  Claude is configured to always begin with the discovery questionnaire before writing any code. If it skips straight to building, say:
+
+  > *"Please start with the discovery questions before writing any code."*
+
+  Claude will stop, return to Phase 1, and run the questionnaire. This can happen if Claude didn't fully read the `CLAUDE.md` instructions on startup — restarting the session (`Ctrl+C`, then `claude`) also fixes it.
+</Accordion>
+
+<Accordion title="Claude skips a phase I expected to review">
+  This is usually intentional. Here's which phases are automatic and which have checkpoints:
+
+  | Phase | User Checkpoint? |
+  |-------|-----------------|
+  | Phase 1: Discovery | ✅ Yes — after Round 2 (design direction) and Round 4 (brief confirmation) |
+  | Phase 2: Design System | ✅ Yes — approval before proceeding |
+  | Phase 3: Scaffold | ❌ Automatic — Claude runs all setup commands |
+  | Phase 4: Build | ❌ Automatic — Claude writes all files |
+  | Phase 5: Preview & QA | ✅ Yes — feedback on the design |
+  | Phase 6: Deploy | ✅ Yes — explicit "yes" to deploy |
+
+  Phases 3 and 4 are intentionally automatic — Claude builds everything and shows you the result rather than asking for permission at every step. If you want to review something mid-build, say *"pause and show me what you've built so far"* and Claude will start the dev server so you can preview.
+</Accordion>

@@ -1,0 +1,201 @@
+---
+title: "Phase 4: Build — Writing Your Landing Page Code"
+sidebarTitle: "Build"
+description: "How Claude writes every file — layout, page, and components — turning your approved design system into a complete landing page."
+---
+
+Phase 4 is where the landing page comes to life. Claude writes every file without stopping to ask for approval — the full page is built, then you review it in Phase 5. This approach produces a complete, coherent result rather than a patchwork of individually approved fragments.
+
+## What Phase 4 Produces
+
+Claude writes three categories of files inside `site/src/`:
+
+- **`app/layout.tsx`** — Next.js root layout: font loading, metadata export, body wrapper
+- **`app/page.tsx`** — the landing page itself, assembled from components
+- **`components/`** — individual section components (Hero, Features, Testimonials, etc.)
+
+All files use the design system tokens, font choices, and archetype structure finalized in Phase 2. Nothing is hardcoded — colors come from CSS custom properties, fonts from `next/font/google` variables, spacing from the fluid scale.
+
+---
+
+## Next.js App Router Structure
+
+```
+site/src/app/
+├── layout.tsx     ← Google Fonts, metadata object, body className
+├── page.tsx       ← Landing page: imports and orders section components
+└── globals.css    ← Token values updated to your brand colors and fonts
+```
+
+### `layout.tsx` — Fonts and Metadata
+
+```tsx
+import { Space_Grotesk, DM_Sans } from "next/font/google";
+import type { Metadata } from "next";
+import "./globals.css";
+
+const display = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+});
+
+const text = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-text",
+  display: "swap",
+});
+
+export const metadata: Metadata = {
+  title: "Acme Studio — Design That Moves",
+  description: "We build brand identities for companies that want to be remembered.",
+  openGraph: {
+    title: "Acme Studio — Design That Moves",
+    description: "We build brand identities for companies that want to be remembered.",
+  },
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body className={`${display.variable} ${text.variable} antialiased`}>
+        {children}
+      </body>
+    </html>
+  );
+}
+```
+
+<Note>
+  Claude overwrites the default `body { font-family: Arial, Helvetica, sans-serif }` that `create-next-app` hardcodes. Arial is on the banned font list. The Google Fonts variables set in `layout.tsx` are bridged to utility classes through `globals.css`.
+</Note>
+
+### `page.tsx` — The Landing Page
+
+`page.tsx` is kept as a Server Component where possible. Components that use `useState`, `useEffect`, event handlers, or Motion animations include `"use client"` at the top of their file.
+
+---
+
+## How Copy Is Written
+
+Every piece of text on the page goes through the `humanizer` skill before it's written into any file. This removes the vocabulary patterns that make AI-generated copy sound like AI-generated copy.
+
+**Banned words and phrases:**
+> delve, tapestry, landscape, foster, showcase, vibrant, nestled, leverage, innovative, cutting-edge, game-changing, seamless, empower, harness, spearhead, holistic, synergy, robust, dynamic, elevate, transform, revolutionize, reimagine, curate, bespoke
+
+**Banned patterns:**
+- "In a world where..." or "In today's [adjective] landscape..."
+- Every sentence being the same length
+- Em dash overuse — especially multiple per paragraph — like this
+- Ending sections with "The future of [topic] is bright"
+- Vague authority: "Experts say..." / "Many believe..."
+
+**What good copy looks like instead:**
+- Specific. Numbers, names, real details.
+- Opinionated. "We build fast" beats "We deliver innovative solutions."
+- Varied rhythm. Short punchy lines. Then longer ones that give the reader room to absorb what you just said.
+- Conversational. "You" and "we" — not a press release.
+
+---
+
+## Standard Section Order
+
+Unless your archetype specifies otherwise, sections follow this sequence:
+
+1. **Navigation** — logo, 2–3 links, CTA button
+2. **Hero** — headline, subheadline, primary CTA
+3. **Social Proof Strip** — logos, a key metric, or trust badges
+4. **Features / Services** — 3–4 items in a varied layout (not identical cards)
+5. **Testimonials** — 1–3 quotes with names and roles
+6. **CTA Section** — repeat the main call to action
+7. **Footer** — contact info, social links, and the footer credit
+
+The exact order is determined by your chosen archetype from Phase 2. Claude tells you which archetype it's using: *"Based on your consulting business, I'm using the Social-Proof-Heavy pattern because trust signals need to come before the ask."*
+
+---
+
+## How Questionnaire Answers Become Page Content
+
+<CardGroup cols={2}>
+  <Card title="Hero Headline (h1)" icon="heading">
+    From your tagline (Q11). If you didn't provide one, Claude derives it from your main benefit (Q9). Short, punchy, memorable — adapted for impact, not copied verbatim.
+  </Card>
+  <Card title="Hero Subheadline" icon="align-left">
+    One sentence combining what you do (Q2) and who you serve (Q3). Sets context for first-time visitors.
+  </Card>
+  <Card title="CTA Button Text" icon="cursor-arrow-rays">
+    From your main action (Q8) — "Book a Call", "Start Free Trial", "Get a Quote". Claude uses the exact words you chose.
+  </Card>
+  <Card title="Features Section" icon="list-check">
+    From your 3–4 key highlights (Q9). Benefit-focused descriptions, not a bullet-point list of capabilities.
+  </Card>
+  <Card title="Contact Section" icon="envelope">
+    From your contact preference (Q10) — mailto link, Formspree form, or phone number.
+  </Card>
+  <Card title="Social Links" icon="share-nodes">
+    From your social media accounts (Q13), placed in the footer. If you skipped this, placeholder icons are used and you fill in the URLs later.
+  </Card>
+</CardGroup>
+
+---
+
+## Contact Form Options
+
+<Steps>
+  <Step title="Simple mailto: (default)">
+    A contact section styled as a call-to-action with a "Send us an email" button. No backend needed — clicking opens the user's email client.
+
+    This is the default if you said you want a contact option but didn't specify which kind.
+  </Step>
+  <Step title="Formspree (no backend needed)">
+    A real HTML form that submits to Formspree's free service. You need a Formspree account and a form ID (looks like `xpznqkdl`).
+
+    ```tsx
+    <form action="https://formspree.io/f/{form-id}" method="POST">
+      <label htmlFor="name">Name</label>
+      <input id="name" type="text" name="name" required />
+      <label htmlFor="email">Email</label>
+      <input id="email" type="email" name="email" required />
+      <label htmlFor="message">Message</label>
+      <textarea id="message" name="message" required />
+      <button type="submit">Send Message</button>
+    </form>
+    ```
+
+    If you'd rather set up Formspree later, Claude uses `mailto:` and leaves a `// TODO: Replace with Formspree` comment in the code.
+
+    <Note>
+      Every form field has a visible `<label>` element — placeholder text alone doesn't satisfy accessibility requirements.
+    </Note>
+  </Step>
+</Steps>
+
+---
+
+## Accessibility Built In
+
+Claude writes semantic HTML throughout — not just generic `<div>` containers:
+
+- `<header>`, `<nav>`, `<main>`, `<section>`, `<footer>` for document structure
+- One `<h1>` (the hero headline), then `<h2>` and `<h3>` in order — no skipped levels
+- `alt` text on all informative images, `alt=""` on decorative ones
+- `aria-label` on icon-only buttons
+- Focus order matching visual order
+- All interactive elements keyboard accessible
+- WCAG AA contrast: 4.5:1 for body text, 3:1 for large text
+
+---
+
+## The Footer Credit
+
+The last line of every footer reads:
+
+> Built with Claude Web Builder by [Tododeia](https://tododeia.com)
+
+It's styled with `text-sm text-muted-foreground` — subtle, not prominent. You can remove or modify it after deployment. The code is yours.
+
+---
+
+## This Phase Is Fully Automatic
+
+Claude writes every file without asking for approval. The questionnaire answers, approved design system, and chosen archetype give it everything it needs to make confident decisions. When Phase 4 is done, Claude moves directly to Phase 5 — starting the dev server, taking screenshots, and running the full QA pipeline.

@@ -1,0 +1,177 @@
+---
+title: "Prerequisites for Claude Web Builder"
+sidebarTitle: "Prerequisites"
+description: "Everything you need before running Claude Web Builder: Claude Code, Node.js 18+, and Git. All free except Claude Code subscription."
+---
+
+Claude Web Builder has three required dependencies and one optional one. If you're on a Mac or Linux machine, you likely already have two of the three installed. Setting everything up from scratch takes about 5–10 minutes. The table below gives you a quick overview; the sections that follow walk through each one in detail.
+
+| Dependency | Required? | Why You Need It | Get It |
+|---|---|---|---|
+| **Claude Code** | Required | Runs the AI assistant that builds your page | `npm install -g @anthropic-ai/claude-code` |
+| **Node.js 18+** | Required | Builds and runs the Next.js landing page | [nodejs.org](https://nodejs.org) — LTS release |
+| **Git** | Required | Downloads (clones) the Claude Web Builder project | Pre-installed on Mac/Linux; [git-scm.com](https://git-scm.com) for Windows |
+| **Vercel account** | Optional | Only needed to claim deployments permanently or add a custom domain | Free at [vercel.com](https://vercel.com) |
+
+---
+
+## Claude Code
+
+Claude Code is the command-line tool from Anthropic that powers Claude Web Builder. When you run `claude` inside the project folder, it reads the bundled instructions and 21 skills and becomes your dedicated web-building assistant.
+
+**Why it's required:** Claude Web Builder is a Claude Code project — it has no browser-based interface. All interaction happens through the Claude Code CLI.
+
+**What you need:** An active Anthropic subscription. Claude Code is the interface; the subscription covers the underlying model usage.
+
+### Install and verify
+
+<CodeGroup>
+
+```bash Mac / Linux
+# Install Claude Code globally
+npm install -g @anthropic-ai/claude-code
+
+# Log in with your Anthropic account (opens a browser window)
+claude login
+
+# Verify the installation
+claude --version
+```
+
+```bash Windows (Command Prompt or PowerShell)
+# Install Claude Code globally
+npm install -g @anthropic-ai/claude-code
+
+# Log in with your Anthropic account (opens a browser window)
+claude login
+
+# Verify the installation
+claude --version
+```
+
+</CodeGroup>
+
+After `claude login` completes, you're ready. If `claude` is not recognized after install, close your terminal, reopen it, and try again — the global PATH sometimes needs a fresh session to update.
+
+---
+
+## Node.js 18+
+
+Node.js is the JavaScript runtime that compiles and serves your landing page locally. Claude Web Builder uses it to scaffold the Next.js project, install packages, run the development server, and build for deployment.
+
+**Why it's required:** The landing page is a Next.js application. Next.js requires Node.js to run.
+
+**Minimum version:** Node.js 18. Versions below 18 will cause build failures.
+
+### Check your current version
+
+```bash
+node --version
+```
+
+If the output is `v18.x.x` or higher, you're set. If the command isn't found, or if the version is below 18, install the LTS release:
+
+### Install Node.js
+
+<CodeGroup>
+
+```bash Mac
+# Download the LTS installer from nodejs.org, or use Homebrew:
+brew install node
+
+# Verify after install
+node --version
+npm --version
+```
+
+```bash Linux (Ubuntu / Debian)
+# Install via apt
+sudo apt update && sudo apt install nodejs npm
+
+# Or use the NodeSource repository for a newer version:
+# https://nodejs.org/en/download/package-manager
+
+# Verify after install
+node --version
+npm --version
+```
+
+```bash Windows
+# Download and run the LTS installer from:
+# https://nodejs.org
+#
+# The installer adds Node.js and npm to your PATH automatically.
+# After install, open a new Command Prompt or PowerShell window and verify:
+node --version
+npm --version
+```
+
+</CodeGroup>
+
+Always download the **LTS** (Long-Term Support) release from [nodejs.org](https://nodejs.org) — it's the most stable version and is what Claude Web Builder is tested against.
+
+---
+
+## Git
+
+Git is the version control tool used to clone (download) the Claude Web Builder project to your computer. You run it once at the start and don't need it again after that.
+
+**Why it's required:** Claude Web Builder is distributed as a Git repository. Cloning it is the recommended way to get the project, including all 21 bundled skills in `.claude/skills/`.
+
+### Check if Git is installed
+
+```bash
+git --version
+```
+
+If you see a version number, Git is already installed. Mac and Linux systems almost always have Git pre-installed.
+
+### Install Git
+
+<CodeGroup>
+
+```bash Mac
+# Git is installed automatically when you run it for the first time.
+# macOS will prompt you to install Xcode Command Line Tools.
+# Alternatively, install via Homebrew:
+brew install git
+```
+
+```bash Linux (Ubuntu / Debian)
+sudo apt update && sudo apt install git
+
+# Verify
+git --version
+```
+
+```bash Windows
+# Download the installer from:
+# https://git-scm.com/download/win
+#
+# Run the installer and accept the defaults.
+# After install, open Git Bash or a new PowerShell window and verify:
+git --version
+```
+
+</CodeGroup>
+
+---
+
+## Vercel Account (Optional)
+
+Claude Web Builder includes a bundled deploy script that publishes your page to a live Vercel URL without any account — you get a shareable link like `https://your-site-abc123.vercel.app` automatically.
+
+A Vercel account is only needed if you want to:
+- **Keep the deployment permanently** (unclaimed preview URLs expire after a period of inactivity)
+- **Add a custom domain** (like `yourbusiness.com`)
+- **Access your project dashboard** to manage redirects, environment variables, or analytics
+
+**How to get it:** Sign up for free at [vercel.com](https://vercel.com). No credit card required. The free Hobby plan covers everything Claude Web Builder deploys.
+
+When Claude gives you a live URL after deployment, it also provides a **claim URL**. Opening that link and logging in with your Vercel account permanently attaches the deployment to your account.
+
+---
+
+<Tip>
+  Ready? Head to the [Quickstart](/quickstart) to build your first page.
+</Tip>

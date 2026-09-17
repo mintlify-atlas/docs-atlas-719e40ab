@@ -1,0 +1,378 @@
+---
+title: "Design Guide: Typography, Color, Layout, and Motion"
+sidebarTitle: "Design Guide"
+description: "Design principles Claude applies on every build — typography, OKLCH color, fluid spacing, motion rules, and copy standards to prevent AI-looking pages."
+---
+
+Every landing page Claude Web Builder produces is held to the same design standards: a defined set of rules for typography, color, spacing, motion, and copy that work together to make the result feel human-made and considered. This page documents all of those rules. If you're debugging an unexpected design choice, or want to understand why Claude made a particular decision, start here.
+
+## The AI Slop Test
+
+Before showing a page to anyone, Claude runs a single mental test: if you showed this interface to a stranger and said "AI made this," would they believe you immediately?
+
+If the answer is yes, the design gets redone. The goal is a page that makes someone ask **"how was this made?"** — not "which AI made this?" That means avoiding the visual tics that LLM-generated interfaces share: the same bland blue color schemes, the same three-column icon grids, the same round-corner cards with drop shadows. Every design decision in this guide exists to push against those patterns.
+
+---
+
+## Typography
+
+Claude never uses system fonts or the most common AI defaults. Typography is one of the fastest ways to make a page feel intentional or generic — the wrong font pairing signals "template" before the user has read a word.
+
+### Banned Fonts
+
+The following fonts are forbidden on every build, regardless of the project vibe:
+
+- **Inter** — the default React/Vercel font
+- **Roboto** — the default Android/Google font
+- **Arial** and **Helvetica** — system defaults; `create-next-app` hardcodes Arial and it must be overwritten
+- **Open Sans** — the most-used Google Font; immediately recognizable
+- **system-ui / sans-serif** — fallback stacks that produce whatever the OS chooses
+
+### Font Loading Pattern
+
+Fonts are loaded via `next/font/google` — never CDN links, never `@import` in CSS. This eliminates render-blocking requests and prevents layout shift on font swap. Note that the CSS variable names passed to `next/font` (`--font-display`, `--font-text`) must differ from the Tailwind theme keys (`--font-heading`, `--font-body`) to avoid a self-referencing mapping that resolves to nothing.
+
+```tsx
+import { Space_Grotesk, DM_Sans } from "next/font/google";
+
+// Variable names MUST differ from the @theme inline keys
+const display = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-display",   // ← emitted on <body>
+  display: "swap",
+});
+
+const text = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-text",      // ← emitted on <body>
+  display: "swap",
+});
+
+// In layout.tsx:
+<body className={`${display.variable} ${text.variable} antialiased`}>
+```
+
+In `globals.css`, the `@theme inline` block bridges those variables to utility classes:
+
+```css
+@theme inline {
+  --font-heading: var(--font-display);
+  --font-body:    var(--font-text);
+  --font-sans:    var(--font-text);
+}
+```
+
+Only after that mapping exists do `font-heading` and `font-body` work as Tailwind classes.
+
+### Recommended Font Pairings
+
+Claude chooses a pairing based on the business vibe established in the Discovery phase. The table below lists the full set of vetted combinations.
+
+<Tabs>
+  <Tab title="Elegant / Luxury">
+    | Role | Options |
+    |------|---------|
+    | Headline | Playfair Display, Cormorant Garamond, EB Garamond |
+    | Body | Lora, Source Serif 4, Crimson Text |
+
+    Best for: high-end services, fashion, fine dining, boutique hotels, premium brands. Prioritizes contrast between serif headline weight and a readable serif body.
+  </Tab>
+  <Tab title="Modern / Clean">
+    | Role | Options |
+    |------|---------|
+    | Headline | Space Grotesk, Outfit, Plus Jakarta Sans |
+    | Body | DM Sans, Manrope, Nunito Sans |
+
+    Best for: SaaS, tech startups, apps, and any product that wants to look current without being aggressive. The default for most software businesses.
+  </Tab>
+  <Tab title="Bold / Impactful">
+    | Role | Options |
+    |------|---------|
+    | Headline | Syne, Clash Display (variable), Unbounded |
+    | Body | Work Sans, Karla, Rubik |
+
+    Best for: creative agencies, product launches, streetwear, music, anything meant to stop the scroll. High contrast between display and body weights.
+  </Tab>
+  <Tab title="Playful / Warm">
+    | Role | Options |
+    |------|---------|
+    | Headline | Fredoka, Baloo 2, Comfortaa |
+    | Body | Quicksand, Poppins, Nunito |
+
+    Best for: children's products, food brands, wellness apps, local businesses. Rounded letterforms create approachability without sacrificing legibility.
+  </Tab>
+  <Tab title="Professional">
+    | Role | Options |
+    |------|---------|
+    | Headline | Instrument Serif, Literata, Fraunces |
+    | Body | Atkinson Hyperlegible, Inter (only as body with a distinctive headline) |
+
+    Best for: law firms, consultants, healthcare, finance. This is the one case where Inter is permitted — only as body text when the headline is a distinctive editorial serif.
+  </Tab>
+  <Tab title="Edgy / Experimental">
+    | Role | Options |
+    |------|---------|
+    | Headline | Space Mono, JetBrains Mono, Major Mono Display |
+    | Body | IBM Plex Sans, Geist Sans |
+
+    Best for: developer tools, crypto, cybersecurity, avant-garde brands. Monospace headlines are used deliberately here — not as a lazy shorthand for "technical."
+  </Tab>
+</Tabs>
+
+### Fluid Type Scale
+
+All font sizes use `clamp()` for fluid scaling between mobile and desktop. These are declared inside `@theme` (not bare `:root`) so they become Tailwind utility classes:
+
+```css
+@theme {
+  --text-fluid-sm:   clamp(0.875rem, 0.80rem + 0.35vw, 1rem);
+  --text-fluid-base: clamp(1rem,     0.90rem + 0.50vw, 1.125rem);
+  --text-fluid-lg:   clamp(1.25rem,  1.00rem + 1.25vw, 1.75rem);
+  --text-fluid-xl:   clamp(1.75rem,  1.20rem + 2.75vw, 3rem);
+  --text-fluid-2xl:  clamp(2.25rem,  1.50rem + 3.75vw, 4.5rem);
+}
+```
+
+Usage: `<h1 className="text-fluid-2xl font-heading">` and `<p className="text-fluid-base font-body">`. The `fluid-` prefix is intentional — using `--text-xl` would silently overwrite Tailwind's built-in `text-xl` inside generated shadcn components.
+
+### Font Weight Hierarchy
+
+| Weight | Name | Use |
+|--------|------|-----|
+| 300 | Light | Secondary text, captions, fine print |
+| 400 | Regular | Body text |
+| 500 | Medium | Subheadings, form labels |
+| 600 | Semibold | Section headings (`<h2>`) |
+| 700–800 | Bold / Extrabold | Hero headlines only |
+
+### Additional Rules
+
+- Set `max-width: 65ch` on body text blocks for optimal reading width
+- Use `font-variant-numeric: tabular-nums` for pricing tables and statistics
+- Never use monospace as a lazy shorthand for "technical" — reserve it for the Edgy/Experimental vibe
+- Don't place rounded icons above every section heading — it signals "template"
+
+---
+
+## Color
+
+The color system is designed around perceptual uniformity and brand cohesion. HSL is not perceptually uniform — equal numerical steps in HSL don't look equal to the human eye. OKLCH is.
+
+### Banned Palettes
+
+The following combinations are prohibited because they are the defining visual signature of AI-generated interfaces:
+
+- **Cyan or teal on dark backgrounds** — the most common AI color scheme
+- **Purple-to-blue gradients** — overused across AI products
+- **Neon accents on dark mode** — harsh and associated with low-effort designs
+- **Pure black `#000` or pure white `#fff`** — too high-contrast; tinted surfaces always look more considered
+
+### OKLCH Color System
+
+All color tokens are defined in OKLCH. The format is `oklch(lightness% chroma hue)`:
+
+```css
+:root {
+  /* Primary palette */
+  --color-primary:       oklch(55% 0.15 250);   /* Brand blue */
+  --color-primary-light: oklch(75% 0.10 250);
+  --color-primary-dark:  oklch(35% 0.15 250);
+
+  /* Tinted neutrals — use the brand hue at low chroma */
+  --color-surface:       oklch(98% 0.01  250);  /* Near-white, blue tint */
+  --color-surface-alt:   oklch(95% 0.015 250);
+  --color-text:          oklch(15% 0.02  250);  /* Near-black, blue tint */
+  --color-text-muted:    oklch(45% 0.02  250);
+
+  /* Accent */
+  --color-accent:        oklch(65% 0.20 30);    /* Warm coral */
+}
+```
+
+**Tinted neutrals recipe:** Take your brand hue angle (e.g., 250 for blue). Apply that same hue to all neutral surfaces and text colors, with chroma between 0.005 and 0.02. This creates subconscious color cohesion without visible tinting.
+
+### 60-30-10 Rule
+
+This rule is about visual weight, not pixel count:
+
+- **60%** — Dominant: surfaces, backgrounds, the "air" of the page
+- **30%** — Secondary: text, containers, structural elements
+- **10%** — Accent: CTAs, highlights, the one thing that draws the eye
+
+Evenly distributed color palettes (equal use of four colors) look indecisive. Dominant color plus a sharp accent always outperforms.
+
+### Dark Mode
+
+Dark mode is **not** an inversion of light mode. It requires separate decisions:
+
+- Different surface values (not just swapped black/white)
+- Reduced chroma on accent colors — bright saturated colors are harsh on dark backgrounds
+- Slightly lighter font weights — text reads heavier on dark surfaces
+- Increased letter-spacing (+0.01em to +0.02em) to compensate for the optical thickening
+
+```css
+.dark {
+  --background:       oklch(17% 0.020 250);
+  --foreground:       oklch(94% 0.010 250);
+  --primary:          oklch(72% 0.110 250);   /* Lower chroma than light mode */
+  --border:           oklch(100% 0 0 / 12%); /* Translucent white, not solid gray */
+}
+```
+
+### Industry Palette Reference
+
+| Industry | Primary | Accent | Neutrals |
+|----------|---------|--------|----------|
+| Food / Restaurant | Terracotta, warm brown | Sage green, gold | Cream, warm gray |
+| Tech / SaaS | Deep navy, charcoal | Coral, amber | Cool off-white |
+| Health / Wellness | Soft sage, eucalyptus | Warm blush, peach | Warm white |
+| Finance / Law | Dark slate, forest green | Muted gold, copper | Cool cream |
+| Creative / Design | Rich burgundy, deep teal | Hot orange, magenta | Near-black, off-white |
+| Education | Ocean blue, indigo | Warm yellow, lime | Light gray, cream |
+
+---
+
+## Spacing & Layout
+
+### 4pt Base Unit
+
+All spacing values are multiples of 4px: 4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 80, 96, 128. No arbitrary values.
+
+### Fluid Spacing
+
+Section, component, and element spacing all scale fluidly between viewport sizes. These tokens live in `@theme` and generate Tailwind utilities automatically:
+
+```css
+@theme {
+  --spacing-section:   clamp(4rem,   8vw, 8rem);   /* py-section */
+  --spacing-component: clamp(1.5rem, 3vw, 3rem);   /* gap-component */
+  --spacing-element:   clamp(0.5rem, 1vw, 1rem);   /* gap-element */
+}
+```
+
+Usage: `<section className="py-section">`, `<ul className="gap-element flex flex-col">`. Named spacing keys add to the numeric scale — `p-4` and `gap-8` keep working.
+
+### Responsive Grids Without Media Queries
+
+```css
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: clamp(1rem, 2vw, 2rem);
+}
+```
+
+### Layout Rules
+
+These are the rules most commonly violated by template-generated pages:
+
+- **Don't center everything.** Left-aligned text with asymmetric layouts feels more designed. Centering every section is the fastest path to "template."
+- **Vary rhythm.** Tight groupings followed by generous separations create visual interest. Identical spacing between every section feels mechanical.
+- **Break the grid intentionally.** Oversized typography, elements that bleed edge-to-edge, or a single deliberately misaligned item signals craft.
+- **Don't wrap everything in cards.** Not every content block needs a container with a border and shadow. Use whitespace and typography to create grouping instead.
+- **Never nest cards inside cards.** This creates visual clutter and signals an inexperienced hand.
+- **Avoid identical card grids.** Three columns of icon + heading + text, repeated, is the most common AI layout pattern. Vary the layout: alternating text/image, featured first item, asymmetric columns.
+
+---
+
+## Motion
+
+Claude uses exactly three easing curves — no others. These are declared as `@theme` tokens so they become Tailwind `ease-*` classes.
+
+### The Three Canonical Easing Curves
+
+```css
+@theme {
+  --ease-out:    cubic-bezier(0.23, 1, 0.32, 1);   /* Entering AND exiting */
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);  /* Moving or morphing on screen */
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);   /* Drawers, bottom sheets */
+}
+```
+
+Built-in CSS easings (`ease`, `ease-in-out`) are too weak and produce limp motion. **Never use `ease-in` on UI elements** — it delays the response at the exact moment the user is watching. Both enters and exits use `ease-out`. Hover and color transitions may use plain `ease`; constant motion like marquees uses `linear`. Never bounce or elastic — real objects decelerate smoothly.
+
+### Duration by Element Type
+
+Motion duration is determined by the element, not by a global bucket. Use these ranges:
+
+| Element | Duration |
+|---------|----------|
+| Button press feedback | 100–160ms |
+| Tooltips, small popovers | 125–200ms |
+| Dropdowns, selects | 150–250ms |
+| Modals, drawers | 200–500ms |
+| Marketing — hero reveal, scroll reveal | 500–800ms |
+
+UI elements stay under 300ms. The marketing row is the exception — landing page hero reveals live there. Exits run at roughly 75% of the entrance duration.
+
+### Motion Rules
+
+<Warning>
+  Violating these rules causes dropped frames, visual jank, or jarring UX. Apply all of them.
+</Warning>
+
+- **Animate `transform` and `opacity` only.** `clip-path` is the one sanctioned exception for reveal effects. Never animate `width`, `height`, `margin`, `padding`, `top`, or `left` — these trigger layout recalculation on every frame.
+- **For height animations** use `grid-template-rows: 0fr → 1fr`, not `height: auto`.
+- **Never `scale(0)`.** Start at `scale(0.95)` with `opacity: 0`. Nothing should appear from nothing — it's visually startling.
+- **Use `translateY(100%)`** (percentages) over hardcoded pixel values — it adapts to content size.
+- **One orchestrated page-load reveal** beats scattered micro-interactions on every element.
+
+### Reduced Motion
+
+Always use the `useReducedMotion()` hook — never check `window.matchMedia` at module scope. In a Next.js client component, the module body runs on the server during prerender, where `window` is undefined.
+
+```tsx
+"use client";
+import { motion, useReducedMotion } from "motion/react";
+
+export function Reveal({ children }: { children: React.ReactNode }) {
+  const reduce = useReducedMotion();
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, transform: reduce ? "none" : "translateY(20px)" }}
+      animate={{ opacity: 1, transform: "translateY(0px)" }}
+      transition={{ duration: reduce ? 0.2 : 0.5, ease: [0.23, 1, 0.32, 1] }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+```
+
+Keep opacity and color transitions — they help comprehension. Remove movement and positional changes. Gate hover animations behind `@media (hover: hover) and (pointer: fine)` to avoid false hover fires on touch devices.
+
+---
+
+## Copy
+
+Good page copy is specific, opinionated, and sounds like a person wrote it. The clearest sign of AI-generated text is the opposite: vague, hedged, and rhythmically flat.
+
+### Banned Words and Phrases
+
+Every piece of copy is checked against this list before delivery. These are the fingerprints of AI-generated text:
+
+<Warning>
+  **Banned vocabulary:** delve, tapestry, landscape, foster, showcase, vibrant, nestled, leverage, innovative, cutting-edge, game-changing, seamless, empower, harness, spearhead, holistic, synergy, robust, dynamic, elevate, transform, revolutionize, reimagine, curate, bespoke, craft (as a verb in body copy), navigate (metaphorical), at the heart of, in today's world, stands as a testament, serves as a reminder, it's worth noting, it's important to note, the broader implications.
+</Warning>
+
+### Banned Patterns
+
+Beyond individual words, these structural patterns mark AI copy:
+
+- Opening with "In a world where…" or "In today's [adjective] landscape…"
+- Rule-of-three lists: "whether you're a X, Y, or Z"
+- Em dash overuse — especially multiple per paragraph — like this
+- Every sentence being the same length
+- Ending with "The future of [topic] is bright"
+- Inflated significance: "This marks a pivotal moment in…"
+- Vague attribution: "Experts say…" "Many believe…"
+
+### Good Copy Habits
+
+- **Have opinions.** "We build fast" beats "We deliver innovative solutions." Vague confidence reads as no confidence.
+- **Vary rhythm.** Short punchy lines. Then a longer one that gives context and earns the punchiness.
+- **Be specific.** Numbers, names, concrete details. "Saved 3 hours a week" beats "saves time."
+- **Use "you" and "we"** — it's a conversation, not a press release.
+- **First person is fine.** "We started this because…" is more human than "Founded with the mission to…"
+- **Button labels should be specific.** "Start free trial" not "Get started." "Send message" not "Submit." "Delete 5 items" not "Delete."

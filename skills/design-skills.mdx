@@ -1,0 +1,178 @@
+---
+title: "Design and Copy Skills: Craft Built Into Every Page"
+sidebarTitle: "Design Skills"
+description: "Eight bundled skills cover visual design, component architecture, copy quality, and reference research — all loaded automatically, no setup required."
+---
+
+Every page Claude builds draws on eight skills that handle the full spectrum of craft work: visual design rules, a component library, accessible component patterns, a searchable design intelligence database, AI-pattern scrubbing, reference URL analysis, industry research, and a final UI guidelines review. None of them need to be installed — they load when Claude opens the project.
+
+---
+
+## frontend-design
+
+`frontend-design` is the primary authority on typography, color, layout, and the AI Slop Test. It contains a design methodology built to prevent the specific visual patterns that make a page look AI-generated, plus seven reference documents covering spacing scales, type scales, color theory, motion, and more.
+
+**What it enforces:**
+
+- Typography rules: Google Fonts only, never Inter / Roboto / Arial / Open Sans or system defaults
+- Color rules: no cyan-on-dark palettes, no purple-to-blue gradients, no neon accents
+- Layout rules: asymmetric, intentional compositions — never center everything, never generic icon + heading + text card grids
+- The **AI Slop Test**: if a reasonable person would immediately recognize the page as AI-made, redesign it
+
+When `frontend-design` and a motion skill disagree on an animation value, the motion skill wins. On everything else — typography, color, layout — `frontend-design` is the final word.
+
+---
+
+## shadcn-ui
+
+`shadcn-ui` documents the React component library built on Radix primitives and Tailwind CSS. It covers how shadcn components are structured, how to compose them correctly, and which accessibility patterns are built in by default.
+
+**Required initialization flags** (verified against shadcn 4.18):
+
+```bash
+npx shadcn@latest init -b radix -p nova -y --css-variables --pointer
+```
+
+- `-b radix` pins Radix primitives. The default base is now Base UI, which does not match the component code this skill documents.
+- `-p nova` is required — `-y` alone does not skip the preset selection prompt and will hang the build.
+- `--pointer` puts `cursor-pointer` on generated components, satisfying the Quality Checklist.
+
+**Base components installed during scaffolding:**
+
+```bash
+npx shadcn@latest add button card navigation-menu separator badge -y
+```
+
+**Section-specific components added as needed:**
+
+| Section | Components |
+|---------|-----------|
+| Navigation | `navigation-menu`, `sheet` (mobile drawer) |
+| Testimonials | `carousel`, `avatar` |
+| Pricing | `toggle` |
+| FAQ | `accordion` |
+| Contact | `input`, `textarea`, `label` |
+
+<Tip>
+  Never run `npx shadcn-ui@latest` — that package is deprecated on npm. The CLI is `shadcn`.
+</Tip>
+
+---
+
+## building-components
+
+`building-components` contains 15 reference documents covering the full scope of modern, composable UI architecture. Claude uses it during Phase 4 when deciding how to structure components.
+
+**What the 15 references cover:**
+
+- Component taxonomy: primitives, components, blocks, and templates — and when to use each
+- Accessibility patterns: ARIA roles, keyboard navigation, focus management, live regions
+- Composition: slots, render props, controlled vs. uncontrolled state
+- Polymorphism: the `as` prop pattern for rendering flexible HTML elements
+- Design token systems and theming with CSS custom properties
+- Data attributes for state-based styling without JavaScript coupling
+
+The skill establishes that `shadcn-ui` is the authority on component structure — `building-components` fills in the patterns and principles that shadcn does not document.
+
+---
+
+## ui-ux-pro-max
+
+`ui-ux-pro-max` is a design intelligence database with a Python CLI. It holds 161 color palettes, 57 font pairings, and 50+ UI styles organized across 11 domains and 13 framework stacks. Claude queries it during Phase 2 to generate concrete design system recommendations.
+
+**CLI usage:**
+
+```bash
+python3 .claude/skills/ui-ux-pro-max/scripts/search.py "restaurant warm" --domain color
+python3 .claude/skills/ui-ux-pro-max/scripts/search.py "elegant serif" --domain typography
+python3 .claude/skills/ui-ux-pro-max/scripts/search.py "saas" --domain landing
+```
+
+**Available `--domain` values:**
+
+| Domain | What it returns |
+|--------|----------------|
+| `product` | Product type recommendations (SaaS, e-commerce, portfolio…) |
+| `style` | UI styles (minimalism, brutalism, glassmorphism…) + CSS keywords |
+| `typography` | Font pairings with Google Fonts imports |
+| `color` | Color palettes by product type and mood |
+| `landing` | Landing page structure and CTA strategies |
+| `chart` | Chart types and library recommendations |
+| `ux` | Best practices and anti-patterns |
+| `icons` | Icon set recommendations by style and product type |
+| `web` | App/web interface patterns and severity-rated guidelines |
+| `react` | React performance guidelines |
+| `google-fonts` | 1,900+ font families with axes, subsets, and popularity |
+
+**Available `--stack` values:** `nextjs`, `shadcn`, `react`, `html-tailwind`, `astro`, `vue`, `nuxtjs`, `nuxt-ui`, `svelte`, `swiftui`, `react-native`, `flutter`, `jetpack-compose`
+
+If `ui-ux-pro-max` fails or returns no results, Claude falls back to `docs/design-guide.md` — picking colors from the industry palette table and fonts from the vibe pairing table.
+
+---
+
+## humanizer
+
+`humanizer` removes the writing patterns that make copy sound AI-generated. It runs on every line of text on every page — headlines, subheadlines, body copy, button labels, tooltips, and footer text.
+
+**What it detects (24+ patterns):**
+
+- Inflated significance: framing ordinary things as extraordinary
+- Promotional language: buzzword-heavy descriptions of features
+- Vague attributions: "studies show," "experts agree," "it's no secret"
+- Em dash overuse: using `—` as a crutch for sentence rhythm
+- Rule of three: automatically grouping everything into three items
+
+**Banned vocabulary — rewrite any sentence containing these words:**
+
+<CodeGroup>
+```text Nouns / Verbs
+delve, tapestry, landscape, harness, empower, leverage, foster, showcase
+```
+```text Adjectives
+vibrant, nestled, innovative, cutting-edge, game-changing, seamless
+```
+</CodeGroup>
+
+The humanizer's positive goal is copy that reads like a real person wrote it: varied sentence length, specific details, clear opinions, and direct second-person address ("you," "your").
+
+---
+
+## web-reader
+
+`web-reader` extracts content, metadata, and design structure from URLs the user provides as references. It gives Claude a concrete understanding of what the user likes about a site — colors, layout approach, typography, spacing — before the design system is finalized.
+
+**How to use it:**
+
+Tell Claude to analyze a reference URL during the discovery phase:
+
+```text
+Use web-reader to analyze https://example.com and note its colors,
+layout approach, typography, and overall design direction.
+```
+
+The skill returns page content, heading hierarchy, font information, color usage patterns, and structural observations. Reference analysis runs in Phase 1 — before the design system is locked in Phase 2.
+
+---
+
+## deep-research
+
+`deep-research` runs systematic web research when Claude needs industry-specific knowledge to write credible copy or make informed design decisions. It returns synthesized findings from multiple sources rather than a single search result.
+
+**When Claude invokes it:**
+
+- Before writing hero copy for an unfamiliar industry (artisan bakery, physical therapy, niche B2B)
+- To understand what messaging resonates with a specific audience
+- To learn what competitors look like and how to differentiate
+
+```text
+Use deep-research to learn about the artisan bakery market — what messaging
+resonates, what competitors look like, what customers care about.
+```
+
+The research runs once during Phase 1 if needed and informs copy decisions throughout Phase 4.
+
+---
+
+## web-design-guidelines
+
+`web-design-guidelines` reviews the built UI against Vercel's Web Interface Guidelines during Phase 5 QA. It fetches the latest guidelines from GitHub and checks the page code for compliance — spacing, layout consistency, component patterns, and visual hierarchy rules that fall outside the other skills' scope.

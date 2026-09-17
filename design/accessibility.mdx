@@ -1,0 +1,283 @@
+---
+title: "Accessibility: WCAG AA Compliance Built Into Every Page"
+sidebarTitle: "Accessibility"
+description: "How Claude Web Builder enforces WCAG AA — semantic HTML, contrast ratios, keyboard nav, focus rings, touch targets, accessible forms, and reduced motion."
+---
+
+Every landing page Claude Web Builder produces targets WCAG AA compliance. This isn't a post-launch audit step — the rules below are baked into the build phase itself, and a formal check runs automatically during Phase 5 (Preview & QA). This page documents each requirement so you know what's being enforced and why it matters.
+
+<Note>
+  The accessibility checks described here run automatically in **Phase 5 (Preview & QA)**. Claude verifies semantic structure, heading hierarchy, contrast ratios, focus states, and image alt text before presenting the page for your review.
+</Note>
+
+---
+
+## Semantic HTML
+
+Semantic elements give screen readers and assistive technologies a navigable structure. A page built entirely from `<div>` elements forces screen reader users to read every word linearly — no jumping to the main content, no skipping the navigation, no understanding of what's a header versus a section.
+
+Every page Claude builds uses the following landmark structure:
+
+```tsx
+<header>          {/* Site header containing the nav */}
+  <nav>           {/* Main navigation */}
+    {/* links */}
+  </nav>
+</header>
+
+<main id="main-content">   {/* Primary content — one per page */}
+  <section>                {/* Each major content area */}
+    {/* section content */}
+  </section>
+</main>
+
+<footer>          {/* Site footer */}
+  {/* footer content */}
+</footer>
+```
+
+A skip-to-content link is included as the first focusable element, allowing keyboard users to bypass the navigation on every page load:
+
+```tsx
+<a
+  href="#main-content"
+  className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4
+             focus:z-50 focus:bg-background focus:px-4 focus:py-2 focus:rounded"
+>
+  Skip to content
+</a>
+```
+
+### Heading Hierarchy
+
+There is exactly one `<h1>` per page — the hero headline. Headings follow strict order: `h1 → h2 → h3`. Levels are never skipped.
+
+- Each major section opens with an `<h2>`
+- Sub-sections within a section use `<h3>`
+- **Bad:** `h1 → h3` (skipped `h2`)
+- **Good:** `h1 → h2 → h3 → h2 → h3`
+
+Use `<ul>` or `<ol>` for groups of related items — navigation links, feature lists, social links. Don't use `<div>` for lists.
+
+---
+
+## Color Contrast
+
+Text that doesn't meet contrast minimums is effectively invisible to users with low vision. Claude checks all text against WCAG AA thresholds before delivery.
+
+| Element | Minimum ratio | Example |
+|---------|---------------|---------|
+| Body text (under 18px) | 4.5:1 | Dark foreground on white background |
+| Large text (18px+ regular, or 14px+ bold) | 3:1 | Section heading on a tinted surface |
+| UI components (icons, input borders) | 3:1 | Border color against its background |
+
+Additional rules:
+
+- **Never use color alone** to convey information. A red error state must also include an icon or text label — colorblind users won't see the red.
+- **No gray text on colored backgrounds.** Use a shade derived from the background color instead — this is why tinted neutrals from the OKLCH system are preferred over generic grays.
+- Tinted neutrals still must meet contrast ratios. The brand hue at low chroma is not automatically sufficient.
+
+---
+
+## Images
+
+### Informative Images
+
+Images that communicate meaning need descriptive `alt` text — specific enough to convey what the image shows, not generic:
+
+```tsx
+import Image from "next/image";
+
+// Descriptive alt for an image that carries meaning
+<Image
+  src="/images/team.jpg"
+  alt="Four designers collaborating around a shared desk with mockups pinned to the wall behind them"
+  width={1200}
+  height={800}
+/>
+```
+
+### Decorative Images
+
+Images that are purely visual — backgrounds, abstract patterns, decorative shapes — use an empty `alt=""`. Screen readers skip elements with empty alt entirely, which is the correct behavior for decoration:
+
+```tsx
+<Image
+  src="/images/background-texture.jpg"
+  alt=""
+  width={1920}
+  height={1080}
+  aria-hidden="true"
+/>
+```
+
+### Icon-Only Buttons
+
+Buttons that contain only an icon (no visible text) require an `aria-label`. Without it, a screen reader announces "button" with no context:
+
+```tsx
+<button aria-label="Open navigation menu">
+  <MenuIcon aria-hidden="true" />
+</button>
+```
+
+When an icon appears alongside visible text, hide it from screen readers to avoid redundancy:
+
+```tsx
+<button>
+  <MailIcon aria-hidden="true" className="mr-2 h-4 w-4" />
+  Send message
+</button>
+```
+
+---
+
+## Focus Management
+
+Focus indicators tell keyboard users where they are on the page. Removing them is one of the most common accessibility errors — and one of the most harmful, because it makes the entire page unusable for keyboard navigation.
+
+### Focus-Visible
+
+Use `:focus-visible`, not `:focus`. The difference: `:focus` applies to mouse clicks too (adding a ring when you click a button, which is visually noisy), while `:focus-visible` applies only for keyboard navigation — which is exactly what screen reader and keyboard users need:
+
+```tsx
+<button
+  className="focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 outline-none"
+>
+  Click me
+</button>
+```
+
+`outline: none` is acceptable only when a `focus-visible` ring replaces it. Never remove the outline with no replacement.
+
+### Tab Order
+
+Tab order must match the visual reading order — left to right, top to bottom. When it doesn't, keyboard users experience the page in a different sequence than sighted users, which is disorienting.
+
+- Avoid `tabindex` values above 0 — they override the natural DOM order and create confusing tab sequences
+- shadcn `Dialog` and `Sheet` components trap focus within the modal automatically when open; background content receives the `inert` attribute
+
+---
+
+## Keyboard Navigation
+
+Every interactive element on the page must be reachable and operable via keyboard. This includes buttons, links, form fields, navigation menus, accordions, carousels, and modals.
+
+Practical test: press `Tab` repeatedly from the top of the page. Confirm that:
+- Focus moves through every interactive element in the expected order
+- Nothing is reachable only by mouse
+- Pressing `Enter` or `Space` on a focused button triggers its action
+- `Escape` closes modals, dropdowns, and mobile menus (shadcn `Dialog` and `Sheet` handle this automatically)
+
+---
+
+## Touch Targets
+
+On mobile, interactive elements need to be large enough to tap reliably. The WCAG minimum is 44×44px. Elements that are visually smaller (icon buttons, text links in dense lists) must be expanded with padding:
+
+```tsx
+{/* Icon button — visually small, but padding brings it to 44px */}
+<button
+  aria-label="Close"
+  className="p-3"   {/* 12px padding on each side → 44px total if icon is 20px */}
+>
+  <XIcon className="h-5 w-5" aria-hidden="true" />
+</button>
+```
+
+Use `@media (pointer: coarse)` to detect touch devices and increase target sizes conditionally when the precision difference justifies it. Use `env(safe-area-inset-*)` for devices with notches to avoid interactive elements being obscured.
+
+---
+
+## Reduced Motion
+
+Approximately 35% of adults over 40 have some degree of vestibular disorder. Scrolling animations, parallax effects, and rapid transitions can trigger nausea, dizziness, or disorientation. The `prefers-reduced-motion` media query lets users opt out.
+
+Claude uses the `useReducedMotion()` hook from `motion/react` — never `window.matchMedia` checked at module scope, which throws during server-side rendering in Next.js:
+
+```tsx
+"use client";
+import { motion, useReducedMotion } from "motion/react";
+
+export function Reveal({ children }: { children: React.ReactNode }) {
+  const reduce = useReducedMotion();
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, transform: reduce ? "none" : "translateY(20px)" }}
+      animate={{ opacity: 1, transform: "translateY(0px)" }}
+      transition={{ duration: reduce ? 0.2 : 0.5, ease: [0.23, 1, 0.32, 1] }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+```
+
+**What to keep when motion is reduced:** opacity and color transitions that aid comprehension (e.g., a button darkening on hover) are fine to leave. **What to remove:** positional movement, scale changes, and parallax effects.
+
+For CSS-only contexts, the global fallback:
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+```
+
+---
+
+## Forms
+
+Contact forms are present on most builds. Every input requires a visible, associated label — not just a placeholder.
+
+### Labels
+
+Placeholder text disappears when the user starts typing, making it useless as the only label. Every input must have a `<label>` with a matching `htmlFor` attribute:
+
+```tsx
+<div className="flex flex-col gap-1.5">
+  <label htmlFor="email" className="text-sm font-medium">
+    Email address
+  </label>
+  <input
+    id="email"
+    type="email"
+    placeholder="you@example.com"
+    className="..."
+  />
+</div>
+```
+
+### Error Messages
+
+Error messages are connected to their input with `aria-describedby`, so screen readers announce the error when the field is focused:
+
+```tsx
+<input
+  id="email"
+  type="email"
+  aria-describedby="email-error"
+  aria-invalid="true"
+  className="border-destructive"
+/>
+<p id="email-error" className="text-sm text-destructive">
+  Please enter a valid email address
+</p>
+```
+
+### Submission Feedback
+
+Success and error states after form submission use `aria-live="polite"` so screen readers announce them without requiring the user to navigate to the message:
+
+```tsx
+<div aria-live="polite" role="status">
+  {submitted && (
+    <p className="text-sm text-green-700">
+      Message sent! We'll be in touch within one business day.
+    </p>
+  )}
+</div>
+```

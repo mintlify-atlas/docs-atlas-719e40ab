@@ -1,0 +1,188 @@
+---
+title: "Phase 5: Preview & QA — Review Before You Go Live"
+sidebarTitle: "Preview & QA"
+description: "How Claude starts a dev server, takes screenshots, runs motion and SEO audits, and collects your feedback before deployment."
+---
+
+Phase 5 is where you see the landing page for the first time. Claude starts the development server, captures screenshots at multiple screen sizes, runs a motion quality gate, audits SEO tags, and checks the page against a quality checklist — all before showing you the result and asking for feedback.
+
+## Starting the Dev Server
+
+Claude starts the local development server automatically:
+
+```bash
+cd site && npm run dev
+```
+
+Once running, the page is accessible at `http://localhost:3000`. Claude captures it for you via screenshots — but you can also open that URL in your browser at any time to interact with the page directly.
+
+---
+
+## Visual QA: Screenshots
+
+Claude takes screenshots in the following order of preference, using whichever method is available in your environment:
+
+<Steps>
+  <Step title="Option 1: playwright-cli (preferred)">
+    Headless browser screenshots — the fastest method, no setup required.
+
+    ```bash
+    playwright-cli open http://localhost:3000
+    playwright-cli screenshot --filename=preview-desktop.png
+    playwright-cli resize 375 812
+    playwright-cli screenshot --filename=preview-mobile.png
+    playwright-cli resize 768 1024
+    playwright-cli screenshot --filename=preview-tablet.png
+    playwright-cli close
+    ```
+
+    Produces desktop (1280px), mobile (375px), and tablet (768px) screenshots.
+  </Step>
+  <Step title="Option 2: chrome-bridge-automation (fallback)">
+    Uses the Midscene Chrome Extension to drive your actual browser — vision-based, no DOM access needed. Only available if you have the Midscene extension installed with an API key configured.
+
+    ```bash
+    npx @midscene/web@1 --bridge connect --url http://localhost:3000
+    npx @midscene/web@1 --bridge take_screenshot
+    npx @midscene/web@1 --bridge disconnect
+    ```
+
+    Claude skips this option and moves to Option 3 if Midscene isn't set up.
+  </Step>
+  <Step title="Option 3: Manual (most common for first-time users)">
+    Claude tells you: *"Open http://localhost:3000 in your browser to see the preview."*
+
+    This is the most common path for non-technical users. You browse the page yourself and describe what you see or want changed.
+  </Step>
+</Steps>
+
+---
+
+## The Motion Review Pipeline
+
+After screenshots, Claude runs a three-step motion audit automatically. No user input is needed — this is a gate, not a conversation.
+
+<Steps>
+  <Step title="Step 1: find-animation-opportunities">
+    Reads `site/src/` and identifies places where animation would genuinely add value — entrance reveals, hover states, transitions between states. Claude caps this at **3 opportunities** (the upstream tool suggests 5–7 for full apps; one landing page needs fewer).
+
+    Claude accepts or rejects each candidate itself. You never see the list. The most important output of this step is the *rejected candidates* — the animations Claude correctly decided not to add.
+  </Step>
+  <Step title="Step 2: animate">
+    Implements the accepted animations using the canonical easing curves and duration guidelines. Every animation uses full `transform` strings rather than shorthands, stays under 300ms for UI elements (up to 800ms for hero and scroll reveals), and starts from `scale(0.95) + opacity: 0` — never from `scale(0)`.
+
+    All motion uses `motion/react` (the package installed in Phase 3 as `motion`).
+  </Step>
+  <Step title="Step 3: review-animations (quality gate)">
+    A strict review against Emil Kowalski's motion standards. Claude invokes this tool by name — it won't fire automatically. It must return **"Approve"** before the page is shown to you.
+
+    If it returns a **Block**, Claude fixes every flagged issue and runs the review again. You never see a page with blocked motion.
+  </Step>
+</Steps>
+
+<Warning>
+  `review-animations` is a hard gate — not a suggestion. Claude does not show you the page until the motion review passes. This prevents common issues like `ease-in` entrances, scale-from-zero appearances, and animations that run too long for UI elements.
+</Warning>
+
+---
+
+## SEO Audit
+
+The bundled `seo-audit` skill checks the built page against SEO best practices:
+
+| Check | What Claude Looks For |
+|-------|-----------------------|
+| **Title tag** | Present, includes business name, 50–60 characters |
+| **Meta description** | Present, descriptive, 150–160 characters |
+| **Heading hierarchy** | One `<h1>`, no skipped levels, `<h2>` and `<h3>` in order |
+| **Image alt text** | All informative images have `alt` text; decorative images have `alt=""` |
+| **Open Graph tags** | `og:title`, `og:description` present for social sharing |
+| **Page language** | `lang` attribute set on `<html>` |
+
+Claude fixes any issues found before showing you the result. If the title is missing or a heading level is skipped, it's corrected automatically.
+
+---
+
+## Quality Checklist
+
+Before showing the page, Claude works through the full quality checklist:
+
+### Copy & Content
+- All text run through the humanizer (no banned AI vocabulary)
+- Copy reads like a human wrote it — varied rhythm, specific details
+
+### Visual Design
+- Color contrast passes WCAG AA (4.5:1 body text, 3:1 large text)
+- No glassmorphism-everywhere or nested card-in-card patterns
+
+### Motion
+- No `ease-in` anywhere — both entrances and exits use the `--ease-out` curve
+- UI elements under 300ms; hero and scroll reveals up to 800ms
+- No `transform: scale(0)` — starts at `scale(0.95)` + `opacity: 0`
+- Only `transform` and `opacity` animated (plus `clip-path` for reveals)
+- Full `transform` strings — not `x`, `y`, or `scale` shorthands
+- No `transition: all` — named properties only
+- Every button has `:active { transform: scale(0.97) }`
+- Hover motion gated behind `@media (hover: hover) and (pointer: fine)`
+- `prefers-reduced-motion` reduces motion but keeps opacity/color transitions
+
+### Technical
+- `npm run build` succeeds with zero errors
+- Fonts loaded via `next/font/google` with `display: "swap"`
+- Images optimized with `next/image`
+- Metadata export present (title, description, OG tags)
+
+### Structure
+- Semantic HTML: `<header>`, `<nav>`, `<main>`, `<section>`, `<footer>`
+- One `<h1>`, heading hierarchy maintained
+- All images have `alt` text
+- Footer credit present
+- Keyboard navigation works (Tab through the page)
+
+---
+
+## Giving Good Feedback
+
+After running all checks, Claude shows you the page and asks a specific question — *"How does the hero section feel?"* — rather than a vague *"Let me know what you think."*
+
+The more specific your feedback, the faster Claude can make the right change:
+
+<CardGroup cols={2}>
+  <Card title="Specific feedback (helpful)" icon="check">
+    - "The hero feels too dark — can we lighten the background?"
+    - "Make the headline bigger"
+    - "The features section feels cluttered — give it more space"
+    - "I want the CTA button to be more prominent"
+    - "The testimonial section looks generic — can we make it less card-like?"
+  </Card>
+  <Card title="Vague feedback (harder to act on)" icon="x">
+    - "I don't like it"
+    - "Can you make it better?"
+    - "It looks off"
+    - "Change the design"
+  </Card>
+</CardGroup>
+
+When you give feedback, Claude makes the change immediately and shows the result — it doesn't ask *"would you like me to change that?"* first.
+
+<Tip>
+  If a section feels wrong but you can't describe why, Claude can offer the `prototype` tool — it builds 3 genuinely different versions of that section behind a live picker so you can choose. Just say "I'm not sure what's off about the features section."
+</Tip>
+
+---
+
+## What Triggers a Return to Phase 2
+
+Most feedback leads to targeted edits in Phase 4/5. But some changes require going back to the design system:
+
+- You want a different color palette entirely
+- You want a different page archetype (e.g., switching from Conversion-Optimized to Storytelling)
+- The overall layout approach feels wrong
+
+If this happens, Claude goes back to Phase 2 and re-presents design options. This is the right call — trying to retrofit a fundamentally different direction onto existing code produces worse results than starting the design system over.
+
+---
+
+## When Phase 5 Is Done
+
+When you're satisfied with the page, Claude asks: *"Ready to deploy?"* — and Phase 6 begins.

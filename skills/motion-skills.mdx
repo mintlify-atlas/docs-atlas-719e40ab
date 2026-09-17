@@ -1,0 +1,149 @@
+---
+title: "Motion Skills: Animation Craft From First Principles"
+sidebarTitle: "Motion Skills"
+description: "Eight motion skills cover easing curves, duration budgets, animation recipes, QA gates, and Apple-style physical motion — from emilkowalski/skills, MIT."
+---
+
+Motion on the web is easy to get wrong in ways that are hard to name. Too slow. The wrong easing curve. Bounces where there should be deceleration. Eight skills ship with Claude Web Builder to handle animation from first principles — deciding whether something should animate, building it with the right curve and duration, reviewing it against a strict craft bar, and extending motion to deeper levels of polish when the project calls for it.
+
+All eight skills come from [emilkowalski/skills](https://github.com/emilkowalski/skills) (MIT, © 2026 Emil Kowalski). Attribution, the pinned upstream commit, and every local modification are documented in [`.claude/skills/ATTRIBUTION.md`](https://github.com/Hainrixz/claude-webkit/blob/main/.claude/skills/ATTRIBUTION.md).
+
+<Warning>
+  `improve-animations` is built for auditing large existing codebases, not for the 6-phase build. It writes plan files and pauses for user input. Do **not** invoke it during Phases 1–6 — it will interrupt the autonomous build flow. Reserve it for post-build refactoring of large projects.
+</Warning>
+
+---
+
+## emil-design-eng
+
+`emil-design-eng` is the motion authority. It defines easing curves, duration budgets, interruption handling, and the core decision framework for whether a given element should animate at all. When `animate` and `apple-design` disagree, `emil-design-eng` is the tiebreaker.
+
+**Three motion rules that override anything else you read in this project:**
+
+<Steps>
+  <Step title="Never ease-in on UI">
+    Entering or exiting — always use ease-out. The canonical value: `--ease-out: cubic-bezier(0.23, 1, 0.32, 1)`. This is an automatic block in `review-animations`.
+  </Step>
+  <Step title="UI stays under 300ms">
+    Buttons: 100–160ms. Tooltips: 125–200ms. Dropdowns: 150–250ms. Modals/drawers: 200–500ms. **Marketing surfaces are exempt** — a hero entrance or scroll reveal may run 500–800ms. Know which one you are animating.
+  </Step>
+  <Step title="Never scale(0)">
+    Nothing appears from nothing. Start at `scale(0.95)` combined with `opacity: 0`. The `review-animations` skill will block any `scale(0)` entrance it finds.
+  </Step>
+</Steps>
+
+---
+
+## animate
+
+`animate` builds animations from canonical recipes. When implementing any motion — hero reveal, nav transition, scroll reveal, button press, hover — Claude loads `animate/RECIPES.md` and starts from the matching recipe rather than inventing values.
+
+**The three canonical easing curves used across all recipes:**
+
+```css
+--ease-out:    cubic-bezier(0.23, 1, 0.32, 1);
+--ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+--ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+```
+
+**Hardware acceleration — always use full transform strings:**
+
+```tsx
+// ✅ Correct — hardware-accelerated
+animate={{ transform: "translateY(0px)" }}
+
+// ❌ Wrong — x/y/scale shorthands are NOT hardware-accelerated
+animate={{ y: 0 }}
+animate={{ scale: 1 }}
+```
+
+The `motion` package (imported from `motion/react`) is installed during Phase 3. Do not install `framer-motion` — it is the legacy alias for the same library and you would ship two copies.
+
+---
+
+## review-animations
+
+`review-animations` is the Phase 5 motion gate. It ships with `disable-model-invocation: true`, which means it will never fire on its own — Claude must invoke it by name after implementing animations. Its verdict is a hard gate: the page cannot be shown to the user until `review-animations` returns **Approve**.
+
+**What it catches:**
+
+- Any `ease-in` usage on entering or exiting elements
+- `scale(0)` entrances
+- UI animation durations over 300ms (excluding marketing surfaces)
+- `transition: all` declarations
+- `x`, `y`, or `scale` shorthand usage (not hardware-accelerated)
+- `transition` on properties other than `transform` and `opacity` (unless `clip-path` for reveals)
+
+Every **Block** the skill returns must be fixed before the user sees the page.
+
+---
+
+## find-animation-opportunities
+
+`find-animation-opportunities` reads the built source tree and identifies where the page should animate but doesn't — and, equally important, where proposed motion should be rejected. Its "rejected candidates" list is the point of the skill: motion you correctly did not add.
+
+**During a single-page build, output is capped at 3 opportunities.** The upstream skill is sized for whole applications and returns 5–7; that volume is inappropriate for a landing page. Claude accepts or rejects each opportunity internally — the table is not handed to the user.
+
+---
+
+## animation-vocabulary
+
+`animation-vocabulary` translates vague user descriptions into precise animation terminology. When a user says "that bouncy thing when the modal opens" or "I want it to feel like it's being pulled in," this skill maps the description to the correct term so Claude can implement or discuss it accurately.
+
+**When it's useful:**
+
+- User describes a motion effect they saw somewhere and can't name
+- User feedback references animation by feel ("too stiff," "too floaty") without technical terms
+- Claude needs to confirm it understood a motion request before implementing
+
+---
+
+## apple-design
+
+`apple-design` translates Apple's motion and materials principles to the web. It covers the physical, spring-based quality that makes Apple interfaces feel fluid rather than mechanical.
+
+**Key principles it documents:**
+
+<Accordion title="Springs over duration curves">
+  Apple's animations feel physical because they are modeled as springs with mass, stiffness, and damping — not fixed-duration eases. On the web this maps to spring configurations in the `motion` package rather than `transition: { duration: 0.3 }`.
+</Accordion>
+
+<Accordion title="Gesture and momentum">
+  Draggable elements carry momentum when released. The deceleration curve matches how physical objects slow down, not a linear ease-out. Swipe thresholds respect the velocity of the gesture, not just the distance traveled.
+</Accordion>
+
+<Accordion title="Depth and materials">
+  Blur, translucency, and layering communicate spatial hierarchy. Elements feel like they exist at different depths in a real physical space rather than being flat overlapping rectangles.
+</Accordion>
+
+<Accordion title="Optical typography">
+  Type sizes, weights, and spacing are tuned for optical balance rather than mathematical precision — similar optical weight does not mean the same numeric value.
+</Accordion>
+
+On typography, `apple-design` recommends system fonts. This conflicts with `frontend-design`, which bans system fonts. `frontend-design` wins on all typography decisions.
+
+---
+
+## prototype
+
+`prototype` builds three genuinely different versions of a single section behind a live visual picker. It ships with `disable-model-invocation: true` — it runs only when Claude invokes it by name.
+
+**When to use it:**
+
+Invoke `prototype` when the user says something like "I don't know what feels right here" or "can I see a few options before we commit?" Claude builds the three variants, presents the picker, and waits for the user to choose. This is one of the few legitimate pause points outside the four main decision checkpoints.
+
+```text
+The prototype skill works best when the user has seen Phase 5 output and
+wants to explore alternatives for a specific section — hero layout, feature
+grid, or pricing card — before the final page is locked.
+```
+
+---
+
+## improve-animations
+
+`improve-animations` runs a full-site motion audit and writes a prioritized implementation plan. It is designed for large codebases where motion has accumulated inconsistently over many sessions or contributors.
+
+**What it produces:** A plan file listing every animation issue found, ranked by visual impact, with specific implementation guidance for each fix.
+
+**When to use it:** After a project has grown beyond the initial build — if the site has been extended with new sections, pages, or components and motion consistency has drifted. Not for the 6-phase build process.

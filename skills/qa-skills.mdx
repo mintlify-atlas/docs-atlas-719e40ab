@@ -1,0 +1,145 @@
+---
+title: "QA and Deployment Skills: Quality Gates and Going Live"
+sidebarTitle: "QA & Deploy Skills"
+description: "Five bundled skills cover visual QA screenshots, SEO audits, 62 performance rules, and zero-account Vercel deployment — all running in Phases 5 and 6."
+---
+
+Phase 5 is where the build gets verified before it reaches the user. Four skills handle different dimensions of quality — visual screenshots at desktop, tablet, and mobile; technical SEO; React performance — and one more ships the finished page to a live Vercel URL without requiring an account or CLI installation. All five are bundled in `.claude/skills/` and load automatically.
+
+<Note>
+  Visual QA runs in priority order. Claude tries `playwright-cli` first — it is headless and requires no user setup. If it fails, `chrome-bridge-automation` is the fallback, but only if you have the Midscene Chrome Extension and API key configured. If both fail, Claude tells you to open `http://localhost:3000` manually.
+</Note>
+
+---
+
+## playwright-cli
+
+`playwright-cli` is the primary visual QA tool. It runs headless — no display server required — and takes screenshots at desktop, mobile, and tablet dimensions during Phase 5. Claude uses the output to review layout, typography, and spacing before asking for user feedback.
+
+**Phase 5 screenshot sequence:**
+
+```bash
+playwright-cli open http://localhost:3000
+playwright-cli screenshot --filename=preview-desktop.png
+playwright-cli resize 375 812
+playwright-cli screenshot --filename=preview-mobile.png
+playwright-cli resize 768 1024
+playwright-cli screenshot --filename=preview-tablet.png
+playwright-cli close
+```
+
+The skill includes seven reference documents covering more advanced automation patterns — click interactions, form testing, and navigation flows — which Claude can draw on if deeper visual testing is needed.
+
+---
+
+## chrome-bridge-automation
+
+`chrome-bridge-automation` is the fallback visual QA method when `playwright-cli` is unavailable. It connects to the user's actual Chrome browser via the Midscene Chrome Extension and takes vision-driven screenshots without needing access to the DOM.
+
+**Requirements:** The user must have the Midscene Chrome Extension installed and an API key configured. Claude only suggests this option for technical users who already have Midscene set up — it is not a default path for first-time users.
+
+**Usage:**
+
+```bash
+npx @midscene/web@1 --bridge connect --url http://localhost:3000
+```
+
+Because it is vision-driven rather than DOM-driven, `chrome-bridge-automation` can capture visual states that headless browser tools sometimes miss — hover states that only trigger in a real browser, custom font rendering, and GPU-composited animations.
+
+---
+
+## seo-audit
+
+`seo-audit` runs a technical SEO analysis during Phase 5, after the page is built and before it is shown to the user. It checks the built output against SEO best practices and returns a list of issues for Claude to fix before deployment.
+
+**What it checks:**
+
+<Accordion title="Title tags">
+  50–60 characters. Primary keyword near the start. Unique per page. Avoids keyword stuffing.
+</Accordion>
+
+<Accordion title="Meta descriptions">
+  150–160 characters. Unique. Includes a clear call to action. Does not duplicate the title.
+</Accordion>
+
+<Accordion title="Heading hierarchy">
+  One `<h1>` on the page. Proper `<h2>` / `<h3>` order — no skipped levels. The `<h1>` matches or echoes the page title.
+</Accordion>
+
+<Accordion title="Image alt text">
+  Descriptive alt text on informative images. Empty `alt=""` on decorative images. No filenames used as alt text.
+</Accordion>
+
+<Accordion title="Core Web Vitals indicators">
+  LCP element marked with `priority` prop (via `next/image`). No render-blocking resources. Font loading uses `display: "swap"`.
+</Accordion>
+
+<Accordion title="Structured data opportunities">
+  JSON-LD candidates identified: `LocalBusiness`, `Product`, `FAQPage`, `Review`. Claude adds the most relevant schema before deployment.
+</Accordion>
+
+Meta tags are set via the `metadata` export in `layout.tsx` — the Next.js App Router pattern that populates `<title>` and `<meta>` tags server-side without a `<Head>` component.
+
+---
+
+## vercel-react-best-practices
+
+`vercel-react-best-practices` contains 62 performance rules organized across eight categories. Claude applies them during Phase 4 while writing code — they are not a post-build audit but a set of constraints that shape implementation decisions from the start.
+
+**The eight rule categories:**
+
+| Category | What it covers |
+|----------|---------------|
+| **Async** | Data fetching patterns, Suspense boundaries, streaming |
+| **Bundle** | Import cost, tree shaking, dynamic imports for large dependencies |
+| **Rendering** | Server vs. client component decisions, partial prerendering |
+| **Rerenders** | Memo, callback, ref patterns that prevent unnecessary work |
+| **Client** | `"use client"` boundary placement, hydration cost |
+| **Server** | Server component data access, caching strategy |
+| **JavaScript** | General JS performance: loops, closures, allocation patterns |
+| **CSS** | Tailwind class efficiency, avoiding layout thrash |
+
+The rules come from Vercel's internal Next.js performance guidance. The full AGENTS.md and all 64 rule files are included in the skill directory.
+
+---
+
+## vercel-deploy
+
+`vercel-deploy` is a bundled shell script that deploys the finished site to Vercel without requiring a Vercel account, the Vercel CLI, or any prior authentication. It is the default deployment method in Phase 6.
+
+**What the script does:**
+
+<Steps>
+  <Step title="Detect framework">
+    Reads `package.json` and identifies the framework (Next.js, Gatsby, Remix, Astro, etc.) to set the correct build configuration.
+  </Step>
+  <Step title="Create tarball">
+    Packages the project directory, excluding `node_modules`, `.git`, `.next`, and `.env` files.
+  </Step>
+  <Step title="Upload to Vercel">
+    Posts the tarball to Vercel's deploy endpoint using only `curl` — no CLI installation needed.
+  </Step>
+  <Step title="Poll for completion">
+    Checks build status every few seconds for up to 5 minutes, waiting for the deployment to finish.
+  </Step>
+  <Step title="Return URLs">
+    Returns a `previewUrl` (shareable immediately) and a `claimUrl` (optional — links the deployment to a free Vercel account for permanent hosting).
+  </Step>
+</Steps>
+
+**Usage — always run the build first:**
+
+```bash
+cd site && npm run build
+bash .claude/skills/vercel-deploy/scripts/deploy.sh site
+```
+
+Running `npm run build` before deploying catches TypeScript errors and build failures locally, so you don't discover them after the upload. The deploy script itself does not run the build — it packages whatever is in the directory.
+
+**If the Vercel CLI is installed and authenticated, the alternative is:**
+
+```bash
+cd site && npx vercel --yes
+```
+
+After a successful deployment, Claude shares both the `previewUrl` (for immediate sharing) and the `claimUrl` (for permanent hosting with a free Vercel account).

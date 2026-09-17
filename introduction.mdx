@@ -1,0 +1,78 @@
+---
+title: "Claude Web Builder: Build a Professional Landing Page Without Code"
+sidebarTitle: "Introduction"
+description: "Claude Web Builder turns a conversation into a live landing page. Describe your business, approve the design, and get a shareable Vercel URL — no coding needed."
+---
+
+Claude Web Builder is an AI-powered assistant built on top of Claude Code. It comes pre-configured with 21 professional skills and guides you — step by step, question by question — through building, previewing, and deploying a custom landing page. You never touch a line of code. You just answer questions about your business and give feedback on the design.
+
+## Who It's For
+
+Claude Web Builder is designed for business owners, freelancers, consultants, and anyone else who needs a professional web presence but doesn't want to learn web development. If you can describe your business in a few sentences, you can use Claude Web Builder.
+
+You don't need to know what React, Tailwind, or Next.js are. You don't need a Vercel account to get a live URL. You don't need design experience. Claude handles all of it — and when it's unsure, it makes a confident decision and tells you what it chose.
+
+## What Makes It Different from Templates
+
+Template builders give you a generic starting point and expect you to drag, drop, and compromise until something looks acceptable. Claude Web Builder works in reverse: it learns about your business first, then builds a page that fits your specific needs.
+
+Every page is assembled from scratch using real design principles — a curated design intelligence database with 161 color palettes and 57 font pairings, motion guidelines from Emil Kowalski's craft rules, and a strict "AI Slop Test" that ensures the result never looks machine-generated. If the output would make someone say "AI made this," it gets redesigned.
+
+## The Six-Phase Workflow
+
+Claude Web Builder walks you through six phases from first question to live URL. Three of them require your input; the other three run automatically while you watch.
+
+<Steps>
+  <Step title="Discovery">
+    Claude asks about your business in four short rounds — the basics, your visual direction, your content, and technical details like whether you have a logo. You can say "you decide" to any question and Claude will make a sensible choice for you.
+  </Step>
+  <Step title="Design System">
+    Claude presents your color palette, typography pairing, and page archetype — a structural template matched to your business type. You approve the direction or request changes before anything gets built.
+  </Step>
+  <Step title="Scaffold">
+    Fully automatic. Claude runs all the setup commands — creating the Next.js project, installing shadcn/ui components, and wiring up dependencies. No input needed from you.
+  </Step>
+  <Step title="Build">
+    Fully automatic. Claude writes every file: layout, page, and all sections. It maps your answers to the hero headline, CTA button, features list, and footer — then runs the copy through a humanizer to remove any AI writing patterns.
+  </Step>
+  <Step title="Preview & QA">
+    Claude starts the development server, takes screenshots at mobile, tablet, and desktop widths, runs an SEO audit, checks motion against a strict quality gate, and then asks you one specific question about the design. Give feedback and it iterates immediately.
+  </Step>
+  <Step title="Deploy">
+    Say yes and Claude runs the build, deploys to Vercel, and hands you a live URL you can share with anyone. No Vercel account required. An optional claim URL lets you attach the project to a free Vercel account for permanent hosting.
+  </Step>
+</Steps>
+
+## Tech Stack
+
+The pages Claude Web Builder produces are built with the same tools used by professional development teams — not a no-code platform that generates brittle markup.
+
+<CardGroup cols={2}>
+  <Card title="Next.js 16" icon="layer-group">
+    App Router architecture with server components, optimized image handling, and `next/font` for zero-layout-shift typography.
+  </Card>
+  <Card title="Tailwind CSS 4" icon="paintbrush">
+    Utility-first styling with fluid type and spacing scales. No `tailwind.config.ts` — Tailwind 4 is configured directly in CSS.
+  </Card>
+  <Card title="shadcn/ui" icon="squares-four">
+    Accessible, unstyled components built on Radix primitives. Button, Card, NavigationMenu, Sheet, Badge, and more — installed only as needed.
+  </Card>
+  <Card title="Motion (motion/react)" icon="play">
+    Production-grade animations with correct easing curves, duration budgets, and `prefers-reduced-motion` support built in.
+  </Card>
+</CardGroup>
+
+## Language Support
+
+Claude Web Builder supports English and Spanish natively. If you write your first message in Spanish, Claude switches the entire session to Spanish — questions, status updates, design presentations, and all communication. The page content itself can be in any language; just tell Claude what you want.
+
+## Ready to Build?
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Clone the repo, run `claude`, and have a live landing page URL in under 10 minutes.
+  </Card>
+  <Card title="Prerequisites" icon="list-checks" href="/prerequisites">
+    Everything you need before you start: Claude Code, Node.js 18+, and Git.
+  </Card>
+</CardGroup>

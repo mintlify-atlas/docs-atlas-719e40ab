@@ -1,0 +1,151 @@
+---
+title: "Phase 2: Design System — Colors, Fonts, and Page Architecture"
+sidebarTitle: "Design System"
+description: "How Claude finalizes your exact color palette, font pairing, page archetype, and section order before any code is written."
+---
+
+Phase 2 takes the design direction you approved at the end of Round 2 and locks it into a complete, precise design system. By the end of this phase, every color has an exact hex code, every font has a name, the page has a chosen archetype, and the section order is set. This system becomes the specification Claude follows throughout Phases 3–5 — no guessing, no improvising mid-build.
+
+## What Phase 2 Produces
+
+Claude presents the complete design system before a single line of code is written:
+
+- **Color palette** — exact hex codes for primary, accent, background, surface, text, and muted tones
+- **Font pairing** — Google Font names for your headline and body typefaces, chosen for your brand's vibe
+- **Page archetype** — one of 8 proven structural templates, matched to your business type
+- **Section order** — the exact sequence of sections the page will follow
+
+If you want changes to any of these, Phase 2 is the right moment. Adjustments here take seconds. Changing the color system after Phase 4 means rewriting every component.
+
+---
+
+## How Claude Chooses Your Design Direction
+
+Claude uses its built-in `ui-ux-pro-max` design intelligence — a curated database of 161 color palettes, 57 font pairings, and 50+ visual styles — to generate recommendations specific to your industry and vibe. It runs a search against your industry category and answers from Round 2, then selects the palette and pairing most likely to perform well for your audience.
+
+If that tool is unavailable, Claude falls back to hand-curated industry palette tables and vibe-to-font mapping tables, then explains exactly what it chose and why: *"I went with a warm terracotta and off-white palette because it fits the artisan food space well — earthy, approachable, not trendy."*
+
+<Tip>
+  Claude always tells you what it chose and why. If the explanation doesn't match what you had in mind, that's the moment to say so — "actually I want something more modern" — and Claude will adjust.
+</Tip>
+
+---
+
+## The 8 Page Archetypes
+
+Claude selects the archetype that best fits your business type and goals. Each archetype defines the section order, CTA strategy, and component approach for the whole page.
+
+<CardGroup cols={2}>
+  <Card title="1. Hero-Centric" icon="star">
+    **Best for:** Portfolios, creative agencies, product launches
+
+    The hero IS the page — a full-viewport first impression with one bold CTA. Work or product grids follow, then a single large testimonial. Everything serves the opening moment.
+  </Card>
+  <Card title="2. Conversion-Optimized" icon="arrow-trend-up">
+    **Best for:** SaaS, apps, subscription services, lead generation
+
+    Every section pushes toward one action. Includes a problem/solution section, objection-handling FAQ, and the CTA appears after every major trust moment.
+  </Card>
+  <Card title="3. Feature-Rich" icon="grid">
+    **Best for:** Tech products, multi-service agencies, platforms
+
+    Comprehensive showcase with alternating text-left/image-right feature sections. Each capability gets space to breathe. Secondary CTAs after each feature detail.
+  </Card>
+  <Card title="4. Minimal" icon="minus">
+    **Best for:** Luxury brands, personal brands, high-end services
+
+    Maximum whitespace. Strong typography does the heavy lifting. Every element is intentional — no decorative filler, no generic grids, no urgency signals.
+  </Card>
+  <Card title="5. Social-Proof-Heavy" icon="users">
+    **Best for:** Consultants, coaches, B2B services
+
+    Trust-first structure. Client logos, a testimonials carousel, and a detailed case study all appear before you ask for any action. The CTA lands at peak credibility.
+  </Card>
+  <Card title="6. Interactive Demo" icon="play">
+    **Best for:** SaaS products, developer tools, design tools
+
+    "See it working" instead of "read about it." The hero contains an embedded demo or interactive preview. A "How it works" section reinforces what visitors just experienced.
+  </Card>
+  <Card title="7. Trust & Authority" icon="shield-check">
+    **Best for:** Law firms, financial services, healthcare
+
+    Credible, established, safe. Credentials strip, team highlights with full names, and a detailed footer with address, phone, and legal links. Formal CTA language throughout.
+  </Card>
+  <Card title="8. Storytelling" icon="book-open">
+    **Best for:** Nonprofits, artisan businesses, food and beverage
+
+    Narrative-driven scrolling experience. Origin story, impact section, then an emotional CTA after the story lands. Designed to build connection before asking for action.
+  </Card>
+</CardGroup>
+
+Claude tells you which archetype it chose and why: *"Based on your coaching business, I'm using the Social-Proof-Heavy pattern — trust signals need to come before the ask for clients hiring you."* If you'd prefer a different archetype, say so and Claude switches.
+
+---
+
+## Design Principles Claude Follows
+
+### No AI Slop Colors
+
+Claude avoids the visual fingerprints of generic AI-generated sites:
+
+- No cyan or teal on dark backgrounds
+- No purple-to-blue gradients
+- No neon accents on dark mode
+- No pure black (`#000`) or pure white (`#fff`)
+
+Instead, colors are chosen using OKLCH — a perceptually uniform color space that produces more natural, harmonious palettes than HSL. Neutrals are tinted toward your brand hue (even 2–3% creates subconscious cohesion), and dark mode is treated as a distinct design rather than just inverted light mode.
+
+### No Banned Fonts
+
+These fonts are blocked because they're the defaults every AI tool reaches for:
+
+> Inter, Roboto, Arial, Open Sans, Helvetica, system-ui defaults
+
+All fonts come from Google Fonts, loaded via `next/font/google` with `display: "swap"`. Choices are made based on your vibe — Playfair Display for elegance, Space Grotesk for modern/clean, Syne for bold/impactful, Fredoka for playful/warm.
+
+### Asymmetric, Intentional Layouts
+
+Claude doesn't center everything. Left-aligned text with asymmetric layouts feels more considered than a centered stack. Card grids with identical icon + heading + text layouts are avoided — sections are varied in structure, rhythm, and visual weight.
+
+### The AI Slop Test
+
+Before finalizing any design direction, Claude asks internally: *If someone looked at this and said "AI made this," would they be right?* If yes, the direction gets reconsidered. A distinctive interface should make someone ask "how was this made?" — not "which AI made this?"
+
+---
+
+## How to Iterate
+
+Phase 2 is designed for iteration. If the design direction doesn't feel right, tell Claude specifically what's off:
+
+<CardGroup cols={2}>
+  <Card title="Color Feedback" icon="palette">
+    - "The colors feel too cold — I want something warmer"
+    - "This looks too corporate for what I do"
+    - "Can we go darker overall?"
+    - "I want a bolder accent color"
+  </Card>
+  <Card title="Font Feedback" icon="type">
+    - "The headline font feels too formal"
+    - "I want something more modern, not so editorial"
+    - "Can the body font be easier to read?"
+    - "I like the headline but not the body"
+  </Card>
+  <Card title="Archetype Feedback" icon="layout">
+    - "I'd rather lead with testimonials than features"
+    - "Can we go more minimal?"
+    - "I want it to feel like more of a story"
+    - "We have a lot of features — give each one more room"
+  </Card>
+  <Card title="Vibe Feedback" icon="sparkles">
+    - "It feels too safe — I want something bolder"
+    - "I want it to feel more premium, less startup"
+    - "This is too playful for my audience"
+    - "I want it to feel handcrafted, not tech-y"
+  </Card>
+</CardGroup>
+
+Claude adjusts and re-presents the design system until you approve it. Once you do, Phase 3 begins immediately — no further prompting needed.
+
+<Warning>
+  Once you approve the design system and Phase 3 begins, changing the color palette or archetype requires going back to Phase 2. It's worth taking a moment here to make sure the direction feels right before Claude starts writing code.
+</Warning>

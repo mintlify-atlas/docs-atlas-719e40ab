@@ -1,0 +1,138 @@
+---
+title: "Phase 3: Scaffold — Setting Up the Next.js Project"
+sidebarTitle: "Scaffold"
+description: "How Claude creates your Next.js project, installs shadcn/ui, and wires up all dependencies — fully automatic, no input needed."
+---
+
+Phase 3 is entirely automatic. Once the design system is approved, Claude runs a precise sequence of terminal commands to create the Next.js project, configure Tailwind CSS 4, initialize the shadcn/ui component library, and install all required packages. You watch it happen — there's nothing to type or approve.
+
+## Before Scaffolding: Node.js Version Check
+
+Claude verifies your Node.js version before running anything else:
+
+```bash
+node --version
+```
+
+If the version is below v18, Claude stops and tells you: *"You need Node.js 18 or higher. Download the LTS version from https://nodejs.org"* — then waits for you to install it before continuing.
+
+If `node` is not found at all, Claude guides you through the installation process. This check only takes a second and prevents build failures later.
+
+---
+
+## The Scaffold Commands
+
+Claude runs these four commands in sequence:
+
+```bash
+npx create-next-app@latest site --typescript --tailwind --app --src-dir --no-import-alias --yes
+cd site
+npx shadcn@latest init -b radix -p nova -y --css-variables --pointer
+npx shadcn@latest add button card navigation-menu separator badge -y
+npm install motion lucide-react
+```
+
+<Note>
+  These exact flags are required. Simplifying or omitting any of them causes silent failures, hanging prompts, or missing components that are difficult to debug later. See the breakdown below for why each one matters.
+</Note>
+
+### Why These Flags Matter
+
+<Steps>
+  <Step title="create-next-app flags">
+    - `--typescript` — TypeScript project (required for shadcn/ui component generation)
+    - `--tailwind` — Tailwind CSS 4 (no config file, token-based system)
+    - `--app` — Next.js App Router (not the legacy Pages Router)
+    - `--src-dir` — places code under `src/` for cleaner project structure
+    - `--no-import-alias` — avoids `@/` path alias conflicts with shadcn
+    - `--yes` — skips all interactive prompts
+  </Step>
+  <Step title="shadcn init flags">
+    - `-b radix` — **required.** Pins Radix UI primitives. shadcn's new default base is Base UI, which uses different component code than what the bundled `shadcn-ui` skill documents. Without this flag, components behave differently.
+    - `-p nova` — **required.** Selects the Nova preset. The `-y` flag alone does not skip the preset selection prompt — it hangs the build silently. Valid presets are `nova, vega, maia, lyra, mira, luma, sera, rhea`. Nova pairs with Lucide icons, which is the icon set this project uses.
+    - `--css-variables` — uses CSS custom properties for theming, enabling dark mode and token overrides
+    - `--pointer` — adds `cursor-pointer` to generated components, satisfying the quality checklist
+  </Step>
+  <Step title="shadcn add (base components)">
+    Installs the components needed for navigation, layout, and content sections. Additional components (avatar, carousel, accordion, etc.) are installed later in Phase 4 based on the specific archetype and sections your page needs.
+  </Step>
+  <Step title="npm install">
+    - `motion` — the Motion library (imported as `motion/react`) for all animations
+    - `lucide-react` — the icon set used throughout the page
+
+    <Warning>
+      Do not install `framer-motion` separately — it's the legacy alias for the same library. Installing both ships two copies of the same package to the browser.
+    </Warning>
+  </Step>
+</Steps>
+
+---
+
+## The Tech Stack Created
+
+After Phase 3 completes, the `site/` directory contains a fully configured project running:
+
+<CardGroup cols={2}>
+  <Card title="Next.js 16 (App Router)" icon="triangle">
+    Server components by default, `"use client"` only where needed. `layout.tsx` handles fonts and metadata; `page.tsx` is the landing page itself.
+  </Card>
+  <Card title="Tailwind CSS 4" icon="wind">
+    No `tailwind.config.ts` — configuration lives in `globals.css` using `@theme` blocks and CSS custom properties. Token namespaces map directly to utility classes.
+  </Card>
+  <Card title="shadcn/ui + Radix" icon="component">
+    Accessible, composable UI components built on Radix primitives. Styled with Tailwind and fully customizable via CSS variables.
+  </Card>
+  <Card title="Motion (motion/react)" icon="wand-magic-sparkles">
+    The Motion library for hardware-accelerated animations. Used for hero reveals, scroll animations, button press feedback, and hover states.
+  </Card>
+  <Card title="Lucide React" icon="shapes">
+    Clean, consistent SVG icon set. Used throughout the page — never emoji as icons.
+  </Card>
+  <Card title="TypeScript" icon="code">
+    Full TypeScript support across all component and page files. Catches type errors before they become build failures.
+  </Card>
+</CardGroup>
+
+---
+
+## The Resulting Directory Structure
+
+```
+site/
+├── src/
+│   └── app/
+│       ├── globals.css          ← Tailwind imports, @theme blocks, CSS tokens
+│       ├── layout.tsx           ← Fonts, metadata, body wrapper
+│       ├── page.tsx             ← The landing page (written in Phase 4)
+│       └── icon.tsx             ← Dynamic favicon (if no logo provided)
+├── public/
+│   └── images/                  ← User-provided assets go here
+├── components/
+│   └── ui/                      ← Generated shadcn/ui components
+├── package.json
+└── next.config.ts
+```
+
+<Note>
+  `site/src/app/globals.css` is generated by `shadcn init` and already contains `@import "tailwindcss"` and the `@theme inline` token map. Phase 4 edits the token values in `:root` and `.dark` to apply your design system colors — it never overwrites the file. Tailwind CSS 4 does not use a `tailwind.config.ts`, and one must not be created.
+</Note>
+
+---
+
+## Error Recovery
+
+Claude handles common scaffold failures automatically:
+
+| Error | What Claude Does |
+|-------|-----------------|
+| "Directory already exists" | Runs `rm -rf site` and retries |
+| Network error during `create-next-app` | Checks connection, retries once |
+| `shadcn init` hangs with no output | Missing `-p` flag — re-runs with `-p nova` |
+| `shadcn init` fails outright | Ensures it's inside `site/`, then retries with `--defaults` |
+| `npm install` fails | Clears `node_modules` and `package-lock.json`, then reinstalls |
+
+---
+
+## What Happens Next
+
+Once scaffolding is complete, Claude moves directly to Phase 4 without pausing. The design system tokens are applied to `globals.css`, the font choices are wired into `layout.tsx`, and the page build begins immediately.

@@ -1,0 +1,101 @@
+{
+  "projectType": "saas",
+  "projectName": "Claude Web Builder",
+  "projectDescription": "An AI-powered web builder that guides non-technical users through a step-by-step process to create and deploy professional landing pages using Claude Code, Next.js, Tailwind CSS, and shadcn/ui — no coding required.",
+  "theme": "almond",
+  "primaryColor": "#da7555",
+  "lightColor": "#040404",
+  "darkColor": null,
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Guide",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "prerequisites"
+            ]
+          },
+          {
+            "group": "Build Process",
+            "pages": [
+              "build/discovery",
+              "build/design-system",
+              "build/scaffold",
+              "build/build",
+              "build/preview-qa",
+              "build/deploy"
+            ]
+          },
+          {
+            "group": "Design Reference",
+            "pages": [
+              "design/design-guide",
+              "design/landing-page-patterns",
+              "design/accessibility",
+              "design/performance"
+            ]
+          },
+          {
+            "group": "Bundled Skills",
+            "pages": [
+              "skills/overview",
+              "skills/design-skills",
+              "skills/motion-skills",
+              "skills/qa-skills"
+            ]
+          },
+          {
+            "group": "Help",
+            "pages": [
+              "help/faq",
+              "help/troubleshooting"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Conversational questionnaire that gathers business details before writing a line of code",
+    "21 bundled professional skills covering design, motion, SEO, accessibility, and deployment",
+    "Automatic Vercel deployment — no account required, live URL in minutes",
+    "Anti-AI-slop design system: real typography, color theory, and motion rules to avoid generic-looking pages",
+    "Mobile-first responsive output built with Next.js 16, Tailwind CSS 4, and shadcn/ui",
+    "6-phase guided workflow from discovery through deploy with minimal user decisions",
+    "Design intelligence database with 161 color palettes and 57 font pairings",
+    "Bilingual support (English and Spanish) throughout the entire build flow"
+  ],
+  "publicApiSurface": [
+    "Phase 1: Discovery — 4-round questionnaire (questionnaire.md / questionnaire-es.md)",
+    "Phase 2: Design System — archetype selection from landing-page-patterns.md + ui-ux-pro-max",
+    "Phase 3: Scaffold — create-next-app + shadcn init + dependency installation",
+    "Phase 4: Build — layout.tsx, page.tsx, component generation with humanizer + animate skills",
+    "Phase 5: Preview & QA — playwright-cli screenshots, seo-audit, review-animations gate",
+    "Phase 6: Deploy — vercel-deploy/scripts/deploy.sh (sandbox, no account) or npx vercel --yes",
+    "Skill: frontend-design — design methodology and anti-AI-slop rules",
+    "Skill: shadcn-ui — React component library with Radix primitives",
+    "Skill: humanizer — 24+ AI writing pattern detection and removal",
+    "Skill: vercel-react-best-practices — 62 Next.js performance rules",
+    "Skill: vercel-deploy — accountless Vercel sandbox deployment script",
+    "Skill: building-components — accessible, composable UI component patterns",
+    "Skill: web-design-guidelines — Vercel Web Interface Guidelines audit",
+    "Skill: playwright-cli — browser automation and screenshot QA",
+    "Skill: chrome-bridge-automation — Chrome visual QA via Midscene extension",
+    "Skill: seo-audit — meta tags, heading structure, Core Web Vitals",
+    "Skill: ui-ux-pro-max — Python CLI with 161 palettes, 57 font pairings, 50+ styles",
+    "Skill: web-reader — reference URL content extraction",
+    "Skill: deep-research — systematic web research for industry-specific copy",
+    "Skill: emil-design-eng — Emil Kowalski's motion and craft rules",
+    "Skill: animate — animation implementation from canonical easing curves",
+    "Skill: review-animations — Phase 5 motion gate (Block / Approve)",
+    "Skill: find-animation-opportunities — motion audit for landing pages",
+    "Skill: improve-animations — full-site motion audit and fix plan",
+    "Skill: animation-vocabulary — precise naming of motion effects",
+    "Skill: apple-design — Apple fluid-motion and gesture principles for the web",
+    "Skill: prototype — 3-variant live picker for section redesigns"
+  ]
+}

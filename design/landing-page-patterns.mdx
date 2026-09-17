@@ -1,0 +1,208 @@
+---
+title: "Landing Page Patterns: 8 Archetypes for Any Business"
+sidebarTitle: "Page Patterns"
+description: "The 8 landing page archetypes Claude picks from — each with a section order, CTA strategy, and shadcn/ui components matched to your specific business type."
+---
+
+Not every business needs the same page structure. A law firm and a SaaS startup both need landing pages, but they have different conversion goals, different trust signals, and different relationships with their visitors. Claude picks from 8 proven archetypes based on the answers you give in the Discovery phase — your business type, your primary CTA, and the feeling you want the page to convey.
+
+During the Design System phase (Phase 2), Claude presents its archetype recommendation and explains why it fits your business. You can approve it, ask for a different one, or describe what you want and Claude will map it to the best match. The archetypes below are the complete set.
+
+---
+
+## The 8 Archetypes
+
+<Accordion title="1. Hero-Centric">
+  **Best for:** Portfolios, creative agencies, product launches, personal brands.
+
+  The hero IS the page — everything else supports and extends the first impression. This archetype prioritizes a bold, full-viewport opening over a comprehensive information structure. It works when the visual or the name is the product.
+
+  **Section order:**
+  1. Minimal nav (logo + 2–3 links only)
+  2. Full-viewport hero (large headline, subheadline, single CTA)
+  3. Brief about strip (one sentence or a single striking stat)
+  4. Work or product grid (3–6 items)
+  5. Single testimonial (large format — not a carousel)
+  6. Contact / CTA
+  7. Footer
+
+  **CTA strategy:** One primary CTA in the hero. Repeat once at the bottom. No CTA in the nav — the minimal navigation is intentional.
+
+  **Key shadcn/ui components:** `button`, `navigation-menu`, `card` (work grid)
+</Accordion>
+
+<Accordion title="2. Conversion-Optimized">
+  **Best for:** SaaS products, apps, subscription services, lead generation campaigns.
+
+  Every section is designed to push toward a single action. The structure handles objections progressively — the hero states the value, social proof builds trust, features answer "but how?", and the FAQ handles "what if?". No section is there for decoration.
+
+  **Section order:**
+  1. Nav with CTA button (action visible before scrolling)
+  2. Hero (problem statement → solution → CTA)
+  3. Social proof strip (logos or "Trusted by X+ companies")
+  4. Pain point / solution section (before/after or problem/solution format)
+  5. Features (benefit-focused, not feature-focused)
+  6. Testimonials (2–3 with names, roles, and photos)
+  7. Pricing or plan comparison (optional)
+  8. FAQ (handles objections directly)
+  9. Final CTA section (strong, specific)
+  10. Footer
+
+  **CTA strategy:** CTA in nav, in hero, after testimonials, and in the final section. The same action every time — no secondary CTAs that dilute focus.
+
+  **Key shadcn/ui components:** `button`, `card`, `badge`, `accordion` (FAQ), `separator`, `toggle` (pricing annual/monthly switch)
+</Accordion>
+
+<Accordion title="3. Feature-Rich">
+  **Best for:** Tech products, multi-service agencies, platforms with many capabilities.
+
+  When the product or service has genuine depth, this archetype gives each feature space to breathe. Alternating text/image layouts prevent the "three identical cards" pattern and let each capability make its own case.
+
+  **Section order:**
+  1. Nav with links to feature categories
+  2. Hero (overview headline + product visual or mockup)
+  3. Feature overview strip (3–4 key benefits with icons — brief)
+  4. Detailed features (alternating text-left/image-right layout, 3–4 sections)
+  5. Integration or partner logos
+  6. Testimonials
+  7. CTA section
+  8. Footer
+
+  **CTA strategy:** Primary CTA in hero. Secondary CTAs after each detailed feature ("Learn more →", "Try it free"). The distribution reflects that users might convert when any single feature clicks for them.
+
+  **Key shadcn/ui components:** `button`, `card`, `badge`, `navigation-menu`, `separator`, `tabs` (feature categories)
+</Accordion>
+
+<Accordion title="4. Minimal">
+  **Best for:** Luxury brands, personal brands, artists, high-end service providers.
+
+  Maximum whitespace. Typography does the heavy lifting. Every element is present because it has to be — if it can be removed without losing meaning, it is. This archetype signals confidence: the work speaks, the copy doesn't push.
+
+  **Section order:**
+  1. Minimal nav (logo + 1–2 text links — no buttons)
+  2. Hero (text-dominant: large serif headline, one line of body, understated CTA)
+  3. Single statement or feature (one paragraph at large type size)
+  4. Visual moment (one image or a single decorative element)
+  5. CTA (understated — text link or outlined button, never filled)
+  6. Footer (minimal — only the essentials)
+
+  **CTA strategy:** One CTA in the hero, one at the bottom. No urgency language — confidence is the conversion mechanism. "Get in touch" rather than "Start now."
+
+  **Key shadcn/ui components:** `button`, `separator` — minimal component usage by design; rely on typography and whitespace
+</Accordion>
+
+<Accordion title="5. Social-Proof-Heavy">
+  **Best for:** Consultants, coaches, service businesses, B2B providers.
+
+  Trust-first. The page answers the implicit question "why should I believe you?" before it asks for anything. Social proof is surfaced earlier and given more space than in other archetypes — it's the primary conversion mechanism, not supporting material.
+
+  **Section order:**
+  1. Nav
+  2. Hero (headline focused on the outcome, not the product or service)
+  3. Client logos strip
+  4. Testimonials grid or carousel (3–6 testimonials with names, roles, and context)
+  5. Case study highlight (one detailed success story with specifics)
+  6. Services overview
+  7. CTA section
+  8. Footer
+
+  **CTA strategy:** CTA placed after the testimonials — the highest-trust point on the page. Repeated after services. "Book a call" or "Get a quote" depending on the business.
+
+  **Key shadcn/ui components:** `button`, `card`, `avatar`, `carousel`, `badge`
+</Accordion>
+
+<Accordion title="6. Interactive Demo">
+  **Best for:** SaaS products, developer tools, design tools — anything you can show working.
+
+  "See it in action" rather than "read about it." The embedded demo or video is the hero. This archetype works when the product is genuinely interesting to watch or try, and when a static screenshot would fail to communicate the value.
+
+  **Section order:**
+  1. Nav with "Try it" CTA (the action is trying, not signing up)
+  2. Hero with embedded demo, video, or interactive preview
+  3. "How it works" (3 steps — numbered, with icons)
+  4. Features (grounded in what the demo just showed)
+  5. Testimonials
+  6. CTA section ("Start free trial")
+  7. Footer
+
+  **CTA strategy:** "Try it" in nav and hero. "Start free trial" after features and at the bottom. The language shift from "try" to "start" mirrors the user's own progression from curious to convinced.
+
+  **Key shadcn/ui components:** `button`, `card`, `badge`, `tabs` (demo modes), `dialog` (expanded demo view)
+</Accordion>
+
+<Accordion title="7. Trust & Authority">
+  **Best for:** Law firms, financial services, healthcare providers, insurance, government.
+
+  Credibility is the product. The design conveys reliability and permanence: strong typography, conservative color, and dense credential signals. Users arriving at these pages have high stakes — they need to feel they're dealing with a serious, established institution.
+
+  **Section order:**
+  1. Nav (logo + clear service categories — users need to orient quickly)
+  2. Hero (confident headline, professional photography or clean abstract graphic)
+  3. Credentials strip (awards, certifications, "X years experience", relevant licenses)
+  4. Services (detailed, organized by category — breadth shows capability)
+  5. Team highlights (key people with photos and credentials)
+  6. Testimonials (formal — full names and company affiliations)
+  7. Contact form (complete form, not just a CTA button)
+  8. Footer (detailed — address, phone number, hours, legal links)
+
+  **CTA strategy:** "Schedule a consultation" — formal, low-pressure language. In hero and after services. Never "Get started" or "Try free" — urgency and informality undercut the trust signal.
+
+  **Key shadcn/ui components:** `button`, `card`, `avatar`, `input`, `textarea`, `label`, `separator`
+</Accordion>
+
+<Accordion title="8. Storytelling">
+  **Best for:** Nonprofits, mission-driven brands, artisan businesses, food and beverage.
+
+  Narrative-driven. The user scrolls through a story. Emotional connection is the conversion mechanism — you're not convincing someone with a feature list, you're inviting them into something. This archetype requires real content: the origin story, the specific people involved, the concrete impact.
+
+  **Section order:**
+  1. Minimal nav
+  2. Hero with an origin teaser ("It started with…" or a single evocative image)
+  3. Origin story section (2–3 paragraphs with a supporting visual)
+  4. What we do / what we make (products or services, framed narratively)
+  5. Impact section (specific numbers, before/after, or community photos)
+  6. Single powerful testimonial (long-form — a full quote, not a one-liner)
+  7. CTA ("Join us", "Support us", "Try it")
+  8. Footer
+
+  **CTA strategy:** The CTA comes after the story has landed — after the impact section, when the emotional investment is highest. "Be part of the story." The copy mirrors the narrative tone, not conversion language.
+
+  **Key shadcn/ui components:** `button`, `card`, `separator`, `badge`
+</Accordion>
+
+---
+
+## CTA Strategy Guide
+
+Across all archetypes, certain CTA placement principles apply universally. Claude follows these rules on every build.
+
+### Placement Rules
+
+- **Above the fold:** One CTA must always be visible without scrolling. If the user arrives and has to scroll before they can take any action, the page is failing.
+- **After social proof:** This is the highest conversion point on any page — testimonials lower resistance, and a CTA placed immediately after captures the momentum.
+- **End of page:** A final CTA before the footer catches users who scrolled to the bottom — they've read everything and are still there, which means they're interested.
+- **Density:** CTAs should never be more than two full scrolls apart. A user should always be within view of one.
+
+### CTA Copy Guidelines
+
+Vague CTAs lose conversions. Specific CTAs earn them:
+
+| Instead of… | Use… |
+|-------------|------|
+| "Get started" | "Start your free trial" |
+| "Learn more" | "See how it works" |
+| "Submit" | "Send message" |
+| "Contact us" | "Book a 30-minute call" |
+| "Deploy" | "See your page live" |
+
+Always match the user's own language. If they said "book a call" in Discovery, the CTA says "Book a Call" — not "Schedule a consultation." For Spanish-language pages: "Empieza gratis", "Agenda una llamada", "Conoce más."
+
+### Visual Hierarchy
+
+Every section uses this three-level system — never more than one primary CTA per section:
+
+| Level | Style | Use |
+|-------|-------|-----|
+| **Primary** | Filled button, brand color, largest on screen | The main action — one per section |
+| **Secondary** | Outlined or ghost button | An alternative action (e.g., "View demo" next to "Start trial") |
+| **Tertiary** | Text link with arrow — "Learn more →" | The least important action, minimal visual weight |

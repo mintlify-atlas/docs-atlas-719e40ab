@@ -1,0 +1,139 @@
+---
+title: "Phase 6: Deploy — Get a Live URL for Your Landing Page"
+sidebarTitle: "Deploy"
+description: "How to publish your landing page to a live Vercel URL — no account required — and what to do with the link once it's live."
+---
+
+Phase 6 is optional but takes about two minutes. Claude asks if you want to deploy, and if you say yes, it builds the project and publishes it to Vercel's infrastructure. You get a shareable URL immediately — no Vercel account, no CLI setup, no DNS configuration required.
+
+## Deployment Methods
+
+There are two ways to deploy, depending on your setup.
+
+### Method 1: Bundled Sandbox Deploy (Recommended)
+
+This method uses the deploy script bundled inside the project. No Vercel account or CLI installation needed.
+
+```bash
+cd site && npm run build
+bash .claude/skills/vercel-deploy/scripts/deploy.sh site
+```
+
+Claude first verifies the build succeeds locally before uploading anything. A failed local build would fail on Vercel too — catching it here saves time.
+
+<Note>
+  The `npm run build` step catches TypeScript errors, missing imports, and any issues introduced during Phase 4. Claude fixes anything that surfaces here before running the deploy script.
+</Note>
+
+**What the deploy script does:**
+
+<Steps>
+  <Step title="Auto-detect framework">
+    The script reads `package.json` and detects Next.js automatically. No framework configuration needed.
+  </Step>
+  <Step title="Package the project">
+    Creates a tarball of the project, excluding `node_modules/`, `.git/`, and `.env` files. Only source code and build output are uploaded.
+  </Step>
+  <Step title="Upload to Vercel">
+    Sends the package to Vercel's sandbox deployment endpoint.
+  </Step>
+  <Step title="Poll until complete">
+    Checks the deployment status every few seconds for up to 5 minutes, waiting for Vercel's build to finish.
+  </Step>
+  <Step title="Return URLs">
+    Prints the preview URL and claim URL to the terminal.
+  </Step>
+</Steps>
+
+### Method 2: Vercel CLI
+
+If you already have the Vercel CLI installed and authenticated with a Vercel account:
+
+```bash
+cd site && npx vercel --yes
+```
+
+For a production deployment with custom domain support:
+
+```bash
+cd site && npx vercel --prod --yes
+```
+
+<Tip>
+  If you haven't logged in before, run `npx vercel login` first. A browser window opens for authentication via GitHub, GitLab, Bitbucket, or email. Once authenticated, re-run `npx vercel --yes`.
+</Tip>
+
+---
+
+## The Two URLs You Get
+
+After a successful sandbox deploy, Claude shares two links:
+
+<CardGroup cols={2}>
+  <Card title="Preview URL" icon="globe">
+    **Live immediately — share with anyone.**
+
+    Looks like `https://site-xxxxx.vercel.app`. This is your landing page, fully live on Vercel's CDN. Send it to clients, paste it in a bio, use it in an email campaign.
+
+    > *"Your page is live! Here's the link: [previewUrl]"*
+  </Card>
+  <Card title="Claim URL" icon="link">
+    **Optional permanent hosting.**
+
+    Looks like `https://vercel.com/claim/xxxxx`. If you want to keep this deployment permanently, connect it to a custom domain, or manage it from a dashboard — claim it with a free Vercel account.
+
+    > *"If you want to keep it permanently or add a custom domain, claim it at [claimUrl] with a free Vercel account."*
+  </Card>
+</CardGroup>
+
+Sandbox deployments stay live as preview URLs indefinitely. Claiming is only needed if you want custom domains or to manage the deployment from `vercel.com/dashboard`.
+
+---
+
+## If You Decline Deployment
+
+Deployment is optional. If you say no, Claude tells you:
+
+> *"No problem! Your page is ready at `site/`. Run `cd site && npm run dev` to see it locally anytime. You can deploy later whenever you want."*
+
+The `site/` directory is a complete, self-contained Next.js project. You can deploy it yourself to Vercel, Netlify, Cloudflare Pages, or any platform that supports Next.js — whenever you're ready.
+
+---
+
+## After Deployment
+
+### Making Changes
+
+Want to update copy, swap a color, or add a section? Go back to Phase 4, make the edit, and redeploy:
+
+```bash
+cd site && npm run build
+bash .claude/skills/vercel-deploy/scripts/deploy.sh site
+```
+
+Each deploy produces a new preview URL. If you claimed your deployment, the production URL updates automatically.
+
+### Adding a Custom Domain
+
+1. Claim the deployment at the claim URL with a free Vercel account
+2. Go to your project in `vercel.com/dashboard`
+3. Open **Settings → Domains**
+4. Add your domain and follow the DNS instructions
+
+Vercel handles SSL certificates automatically.
+
+---
+
+## Troubleshooting
+
+| Issue | What to Do |
+|-------|-----------|
+| **Build error before deploy** | Claude runs `npm run build` first and fixes any TypeScript or import errors before attempting deployment. |
+| **Deploy script times out** | The script waits up to 5 minutes. If it exits early, the deployment may still be building on Vercel's side — check the preview URL manually a few minutes later. |
+| **Auth error with Vercel CLI** (`No existing credentials found`) | Use the sandbox method (Method 1) instead — it requires no account. Or run `npx vercel login` to authenticate the CLI. |
+| **Port 3000 in use (local preview)** | Run `npm run dev -- --port 3001` and open `http://localhost:3001` instead. |
+| **`site/` directory missing** | Scaffolding didn't complete. Go back to Phase 3 and re-run the scaffold commands. |
+
+<Warning>
+  Never commit `.env` files or API keys to the project. The deploy script excludes `.env` automatically, but double-check before sharing your preview URL publicly.
+</Warning>

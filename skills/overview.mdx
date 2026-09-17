@@ -1,0 +1,45 @@
+---
+title: "Bundled Skills: 21 Professional Capabilities"
+sidebarTitle: "Overview"
+description: "21 professional skills ship inside the repo and load automatically when Claude opens the project — no installation, no configuration needed."
+---
+
+Claude Web Builder ships with 21 skills stored as markdown files inside `.claude/skills/`. Claude Code reads them automatically the moment you open the project folder — there is nothing to install, enable, or configure. Each skill is a focused knowledge document: design rules, animation recipes, QA procedures, or deployment scripts that Claude draws on at the right phase of the build.
+
+## Skills by Category
+
+The 21 skills divide across four areas of concern. Every build touches all four — design and copy skills run during Phases 2 and 4, motion skills during Phase 4 and the Phase 5 motion pass, and QA skills close out Phase 5 before deployment.
+
+<CardGroup cols={2}>
+  <Card title="Design & UX" icon="palette">
+    `frontend-design` · `shadcn-ui` · `building-components` · `web-design-guidelines` · `ui-ux-pro-max`
+  </Card>
+  <Card title="Copy & Research" icon="pen-nib">
+    `humanizer` · `web-reader` · `deep-research`
+  </Card>
+  <Card title="Motion & Animation" icon="sparkles">
+    `animate` · `review-animations` · `find-animation-opportunities` · `animation-vocabulary` · `improve-animations` · `apple-design` · `emil-design-eng` · `prototype`
+  </Card>
+  <Card title="QA & Deployment" icon="rocket">
+    `playwright-cli` · `chrome-bridge-automation` · `seo-audit` · `vercel-react-best-practices` · `vercel-deploy`
+  </Card>
+</CardGroup>
+
+## Skill Precedence
+
+Several skills overlap in scope. When two skills disagree, `CLAUDE.md` resolves the conflict with a fixed precedence table — Claude never averages or presents both options.
+
+| Domain | Authority | What Is Overridden |
+|--------|-----------|-------------------|
+| **Motion** — easing, duration, springs, stagger, gestures | `animate` → `emil-design-eng` → `apple-design` | `frontend-design/reference/motion-design.md` and `docs/design-guide.md` §Motion |
+| **Typography, color, layout, AI Slop Test** | `frontend-design` + `ui-ux-pro-max` + `design-guide` | `apple-design` §Typography (recommends system fonts, which this repo bans) |
+| **Component structure & accessibility** | `shadcn-ui` → `building-components` | — |
+| **Copy** | `humanizer` | — |
+
+## Motion Skills Attribution
+
+Eight of the 21 skills — `emil-design-eng`, `animate`, `review-animations`, `find-animation-opportunities`, `animation-vocabulary`, `improve-animations`, `apple-design`, and `prototype` — come from [emilkowalski/skills](https://github.com/emilkowalski/skills) (MIT, © 2026 Emil Kowalski). The upstream commit, license text, and every local modification are recorded in [`.claude/skills/ATTRIBUTION.md`](https://github.com/Hainrixz/claude-webkit/blob/main/.claude/skills/ATTRIBUTION.md).
+
+<Note>
+  `improve-animations` is built for auditing large existing codebases. It writes plan files and pauses for user input. It is **not** invoked automatically during the 6-phase build — only use it for post-build refactoring of large projects.
+</Note>
