@@ -14,6 +14,112 @@ If the answer is yes, the design gets redone. The goal is a page that makes some
 
 ---
 
+## Tailwind v4 Token Setup
+
+Understanding how Tailwind CSS 4 handles custom tokens is prerequisite knowledge for every code example in this guide. There is no `tailwind.config.ts` in v4 — custom properties only become utility classes when declared inside a `@theme` block under a recognized namespace.
+
+| Namespace | Declaration | Generated class |
+|-----------|-------------|-----------------|
+| `--color-*` | `--color-primary` | `bg-primary`, `text-primary`, `border-primary` |
+| `--text-*` | `--text-fluid-xl` | `text-fluid-xl` |
+| `--spacing-*` | `--spacing-section` | `py-section`, `gap-section`, `mt-section` |
+| `--font-*` | `--font-heading` | `font-heading` |
+| `--ease-*` | `--ease-out` | `ease-out` |
+
+A `--color-primary` declared in plain `:root` generates nothing — `bg-primary` will silently do nothing. This is the single most common way to ship a page where half the styling is missing.
+
+Use `@theme inline` when the value points at another custom property that changes at runtime (anything that flips under `.dark`) — `inline` makes opacity modifiers like `bg-primary/90` resolve correctly. Use plain `@theme` for static values like `clamp()` literals and cubic-beziers.
+
+`shadcn init` writes `site/src/app/globals.css` with `@import "tailwindcss"`, an `@theme inline` map, and `:root` / `.dark` token blocks already in place. Edit the values in `:root` and `.dark`; append your own `@theme` block for project tokens. Never overwrite the file.
+
+```css
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* 1. SEMANTIC TOKENS — shadcn's contract. Every generated component reads these names.
+      Put your OKLCH brand values here. Do not rename the keys. */
+:root {
+  --radius: 0.625rem;
+  --background:         oklch(98% 0.010 250);
+  --foreground:         oklch(15% 0.020 250);
+  --primary:            oklch(55% 0.150 250);
+  --primary-foreground: oklch(98% 0.010 250);
+  --accent:             oklch(65% 0.200  30);
+  --muted:              oklch(95% 0.015 250);
+  --muted-foreground:   oklch(45% 0.020 250);
+  --border:             oklch(90% 0.015 250);
+  --ring:               oklch(55% 0.150 250);
+}
+
+/* Dark is NOT inverted light: different surfaces, reduced chroma on accents,
+   and borders as translucent white rather than solid gray. */
+.dark {
+  --background:         oklch(17% 0.020 250);
+  --foreground:         oklch(94% 0.010 250);
+  --primary:            oklch(72% 0.110 250);
+  --primary-foreground: oklch(17% 0.020 250);
+  --accent:             oklch(72% 0.140  30);
+  --muted:              oklch(27% 0.025 250);
+  --muted-foreground:   oklch(68% 0.018 250);
+  --border:             oklch(100% 0 0 / 12%);
+  --ring:               oklch(72% 0.110 250);
+}
+
+/* 2. TOKEN → UTILITY MAP — written by shadcn init. `inline` is required so
+      bg-primary follows .dark at runtime. Do not delete. */
+@theme inline {
+  --color-background:         var(--background);
+  --color-foreground:         var(--foreground);
+  --color-primary:            var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent:             var(--accent);
+  --color-muted:              var(--muted);
+  --color-muted-foreground:   var(--muted-foreground);
+  --color-border:             var(--border);
+  --color-ring:               var(--ring);
+  --radius-lg: var(--radius);
+
+  /* next/font emits --font-display and --font-text on <body>.
+     Source names MUST differ from the theme keys, or the mapping
+     self-references and resolves to nothing. */
+  --font-heading: var(--font-display);
+  --font-body:    var(--font-text);
+  --font-sans:    var(--font-text);
+}
+
+/* 3. PROJECT TOKENS — append this. Static values, so plain @theme. */
+@theme {
+  --text-fluid-sm:   clamp(0.875rem, 0.80rem + 0.35vw, 1rem);
+  --text-fluid-base: clamp(1rem,     0.90rem + 0.50vw, 1.125rem);
+  --text-fluid-lg:   clamp(1.25rem,  1.00rem + 1.25vw, 1.75rem);
+  --text-fluid-xl:   clamp(1.75rem,  1.20rem + 2.75vw, 3rem);
+  --text-fluid-2xl:  clamp(2.25rem,  1.50rem + 3.75vw, 4.5rem);
+
+  --spacing-section:   clamp(4rem,   8vw, 8rem);
+  --spacing-component: clamp(1.5rem, 3vw, 3rem);
+  --spacing-element:   clamp(0.5rem, 1vw, 1rem);
+
+  --ease-out:    cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  /* Overwrite create-next-app's Arial/Helvetica default */
+  body { @apply bg-background text-foreground font-body; }
+  h1, h2, h3 { @apply font-heading; }
+}
+```
+
+<Note>
+  `tailwindcss-animate` from v3 is replaced by `tw-animate-css`, which `shadcn init` installs automatically. Do not add it manually.
+</Note>
+
+---
+
 ## Typography
 
 Claude never uses system fonts or the most common AI defaults. Typography is one of the fastest ways to make a page feel intentional or generic — the wrong font pairing signals "template" before the user has read a word.
@@ -316,6 +422,54 @@ UI elements stay under 300ms. The marketing row is the exception — landing pag
 - **Never `scale(0)`.** Start at `scale(0.95)` with `opacity: 0`. Nothing should appear from nothing — it's visually startling.
 - **Use `translateY(100%)`** (percentages) over hardcoded pixel values — it adapts to content size.
 - **One orchestrated page-load reveal** beats scattered micro-interactions on every element.
+- **Use full `transform` strings** — not `x`, `y`, or `scale` shorthands. Shorthands are not hardware-accelerated and drop frames while the page is loading.
+- Set `transform-origin` at the trigger point for popovers and menus; modals stay centered.
+
+### Springs
+
+Springs are appropriate for drag-to-dismiss interactions and deliberately playful moments. Keep bounce low:
+
+```js
+{ type: "spring", duration: 0.5, bounce: 0.2 }
+```
+
+Bounce 0.1–0.3 only. Never bounce or elastic on standard UI — real objects decelerate smoothly.
+
+### When to Animate
+
+Name the purpose before building. If you can't name it, don't build it.
+
+| How often the user sees it | Verdict |
+|---|---|
+| 100+/day, or keyboard-initiated | **Never animate** |
+| Tens/day (hover, list navigation) | Near-imperceptible, or nothing |
+| Occasional (modal, drawer, toast) | Standard enter/exit |
+| Rare / first-time (hero on load, success state) | The delight budget lives here |
+
+### Stagger
+
+When animating a list of items, stagger children 30–80ms apart. Use full `transform` strings in stagger variants — the `x`/`y`/`scale` shorthands are not GPU-composited:
+
+```tsx
+import { motion } from "motion/react";
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.06, delayChildren: 0.1 },
+  },
+};
+
+const item = {
+  hidden: { opacity: 0, transform: "translateY(20px)" },
+  show: {
+    opacity: 1,
+    transform: "translateY(0px)",
+    transition: { duration: 0.5, ease: [0.23, 1, 0.32, 1] },
+  },
+};
+```
 
 ### Reduced Motion
 
@@ -376,3 +530,45 @@ Beyond individual words, these structural patterns mark AI copy:
 - **Use "you" and "we"** — it's a conversation, not a press release.
 - **First person is fine.** "We started this because…" is more human than "Founded with the mission to…"
 - **Button labels should be specific.** "Start free trial" not "Get started." "Send message" not "Submit." "Delete 5 items" not "Delete."
+
+---
+
+## Interaction States
+
+Every button, link, and form element must handle all eight states. Leaving any unhandled means users encounter visually broken UI.
+
+| State | Visual Change | Tailwind Example |
+|-------|--------------|-----------------|
+| **Default** | Base appearance | `bg-primary text-primary-foreground` |
+| **Hover** | Subtle brightness or scale shift | `hover:bg-primary/90` |
+| **Focus** | Visible ring (keyboard only) | `focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2` |
+| **Active** | Pressed / depressed feel | `active:scale-[0.98]` |
+| **Disabled** | Faded, no pointer | `disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none` |
+| **Loading** | Spinner or skeleton | Replace content with spinner, keep same dimensions |
+| **Error** | Red border and text | `border-destructive text-destructive` |
+| **Success** | Green confirmation | `border-green-500 text-green-700` |
+
+Use `:focus-visible` (not `:focus`) for focus rings — `:focus` fires on mouse clicks too, which is visually noisy. Never remove `outline` without providing a replacement focus indicator.
+
+---
+
+## Visual Details
+
+Small decisions separate a considered page from a generated one.
+
+<CardGroup cols={2}>
+  <Card title="Do">
+    - Intentional decorative elements that reinforce the brand
+    - Subtle texture or grain for warmth
+    - Custom illustrations or geometric patterns over stock photos
+    - Generous whitespace used as a design element
+  </Card>
+  <Card title="Don't">
+    - Glassmorphism everywhere (blur cards, glow borders)
+    - Rounded rectangles with generic drop shadows
+    - Gradient text on headings for "impact"
+    - Icons with rounded corners above every section heading
+    - Thick colored border on one side of a card
+    - Sparklines as decoration (tiny charts that mean nothing)
+  </Card>
+</CardGroup>

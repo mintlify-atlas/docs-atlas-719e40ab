@@ -1,7 +1,7 @@
 ---
 title: "Phase 3: Scaffold — Setting Up the Next.js Project"
 sidebarTitle: "Scaffold"
-description: "How Claude creates your Next.js project, installs shadcn/ui, and wires up all dependencies — fully automatic, no input needed."
+description: "How Claude creates your Next.js project, configures Tailwind CSS 4, and installs shadcn/ui on Radix primitives — fully automatic, nothing to type."
 ---
 
 Phase 3 is entirely automatic. Once the design system is approved, Claude runs a precise sequence of terminal commands to create the Next.js project, configure Tailwind CSS 4, initialize the shadcn/ui component library, and install all required packages. You watch it happen — there's nothing to type or approve.
@@ -100,15 +100,15 @@ After Phase 3 completes, the `site/` directory contains a fully configured proje
 ```
 site/
 ├── src/
-│   └── app/
-│       ├── globals.css          ← Tailwind imports, @theme blocks, CSS tokens
-│       ├── layout.tsx           ← Fonts, metadata, body wrapper
-│       ├── page.tsx             ← The landing page (written in Phase 4)
-│       └── icon.tsx             ← Dynamic favicon (if no logo provided)
+│   ├── app/
+│   │   ├── globals.css          ← Tailwind imports, @theme blocks, CSS tokens
+│   │   ├── layout.tsx           ← Fonts, metadata, body wrapper
+│   │   ├── page.tsx             ← The landing page (written in Phase 4)
+│   │   └── icon.tsx             ← Dynamic favicon (if no logo provided)
+│   └── components/
+│       └── ui/                  ← Generated shadcn/ui components
 ├── public/
 │   └── images/                  ← User-provided assets go here
-├── components/
-│   └── ui/                      ← Generated shadcn/ui components
 ├── package.json
 └── next.config.ts
 ```

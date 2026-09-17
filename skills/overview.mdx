@@ -43,3 +43,7 @@ Eight of the 21 skills — `emil-design-eng`, `animate`, `review-animations`, `f
 <Note>
   `improve-animations` is built for auditing large existing codebases. It writes plan files and pauses for user input. It is **not** invoked automatically during the 6-phase build — only use it for post-build refactoring of large projects.
 </Note>
+
+<Note>
+  `review-animations` and `prototype` both ship with `disable-model-invocation: true` — they will **never** fire on their own. Claude must invoke each by name: `review-animations` as the mandatory Phase 5 motion gate, and `prototype` when the user wants to compare section variants side by side.
+</Note>

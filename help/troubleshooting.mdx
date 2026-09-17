@@ -294,11 +294,11 @@ Sometimes the issue isn't a technical error — it's Claude not following the ex
   | Phase | User Checkpoint? |
   |-------|-----------------|
   | Phase 1: Discovery | ✅ Yes — after Round 2 (design direction) and Round 4 (brief confirmation) |
-  | Phase 2: Design System | ✅ Yes — approval before proceeding |
+  | Phase 2: Design System | ❌ Automatic — Claude refines the approved direction and proceeds |
   | Phase 3: Scaffold | ❌ Automatic — Claude runs all setup commands |
   | Phase 4: Build | ❌ Automatic — Claude writes all files |
   | Phase 5: Preview & QA | ✅ Yes — feedback on the design |
   | Phase 6: Deploy | ✅ Yes — explicit "yes" to deploy |
 
-  Phases 3 and 4 are intentionally automatic — Claude builds everything and shows you the result rather than asking for permission at every step. If you want to review something mid-build, say *"pause and show me what you've built so far"* and Claude will start the dev server so you can preview.
+  Phases 2, 3, and 4 are intentionally automatic — Claude builds everything and shows you the result rather than asking for permission at every step. If you want to review something mid-build, say *"pause and show me what you've built so far"* and Claude will start the dev server so you can preview.
 </Accordion>

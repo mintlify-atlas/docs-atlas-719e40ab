@@ -66,12 +66,12 @@ const heading = Space_Grotesk({
   subsets: ["latin"],
   variable: "--font-display",       // Emitted as a CSS variable on <body>
   display: "swap",                  // Shows fallback font immediately; swaps when loaded
-  weight: ["400", "600", "700"],    // Only the weights actually used
+  weight: ["400", "600", "700"],    // Only the weights actually used — not all 9
 });
 
 const body = DM_Sans({
   subsets: ["latin"],
-  variable: "--font-text",
+  variable: "--font-text",          // Must differ from the @theme key --font-body
   display: "swap",
 });
 ```
